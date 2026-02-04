@@ -1,0 +1,27 @@
+# Files and directories to sync between template and projects
+# Lines starting with # are comments, empty lines are ignored
+
+# === Application core code ===
+src/app/
+src/admin/
+src/auth/
+src/notifications/
+
+# === Configs and settings ===
+playwright.config.ts
+biome.json
+jest.config.ts
+tsconfig.json
+tsconfig.build.json
+Dockerfile
+docker-compose.yml
+nest-cli.json
+commitlint.config.mjs
+lint-staged.config.mjs
+
+# === Dependency patches ===
+patches/
+
+# === Documentation (optional) ===
+# SETUP.md
+# README.md
