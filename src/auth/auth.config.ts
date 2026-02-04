@@ -1,5 +1,5 @@
 import { betterAuth } from 'better-auth';
-import { emailOTP, openAPI } from 'better-auth/plugins';
+import { bearer, emailOTP, jwt, openAPI } from 'better-auth/plugins';
 import { Pool } from 'pg';
 import { uuidv7 } from 'uuidv7';
 
@@ -23,6 +23,11 @@ export type SendOtpCallback = (params: {
 export interface BetterAuthConfigOptions {
   databaseUrl: string;
   secret: string;
+  /**
+   * Base URL of the auth server (e.g., "https://api.example.com")
+   * Used for generating callback URLs and links
+   */
+  baseURL?: string;
   /**
    * Trusted origins for CORS (array of origin patterns)
    */
@@ -54,6 +59,7 @@ export interface BetterAuthConfigOptions {
 export function getBetterAuthConfig({
   databaseUrl,
   secret,
+  baseURL,
   trustedOrigins,
   isTest,
   isProd,
@@ -65,6 +71,7 @@ export function getBetterAuthConfig({
       connectionString: databaseUrl,
     }),
     secret,
+    baseURL,
     basePath: '/auth',
     trustedOrigins,
     hooks: {}, // minimum required to use hook decorators
@@ -94,6 +101,8 @@ export function getBetterAuthConfig({
           }
         },
       }),
+      bearer(),
+      jwt(),
     ],
     user: {
       modelName: 'user',

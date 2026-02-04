@@ -33,6 +33,9 @@ export enum ErrorCode {
   // Server errors (500)
   INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR',
   DATABASE_ERROR = 'DATABASE_ERROR', // fallback
+
+  // Service unavailable (503)
+  SERVICE_UNAVAILABLE = 'SERVICE_UNAVAILABLE',
 }
 
 /**

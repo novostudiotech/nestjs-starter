@@ -175,33 +175,45 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const exceptionResponse = exception.getResponse();
 
     let message: string;
-    let code: ErrorCode;
+    let code: ErrorCode | undefined;
 
-    // Determine error code based on status
-    if (status === HttpStatus.UNAUTHORIZED) {
-      code = ErrorCode.UNAUTHORIZED;
-    } else if (status === HttpStatus.FORBIDDEN) {
-      code = ErrorCode.FORBIDDEN;
-    } else if (status === HttpStatus.NOT_FOUND) {
-      code = ErrorCode.NOT_FOUND;
-    } else if (status >= 500) {
-      code = ErrorCode.INTERNAL_SERVER_ERROR;
-    } else {
-      code = ErrorCode.BAD_REQUEST;
-    }
-
-    // Extract message
-    if (typeof exceptionResponse === 'string') {
-      message = exceptionResponse;
-    } else if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
+    // Extract code and message from exception response if available
+    if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
       const responseObj = exceptionResponse as Record<string, unknown>;
+
+      // Use code from exception response if provided (e.g., from ConflictException)
+      if (responseObj.code && Object.values(ErrorCode).includes(responseObj.code as ErrorCode)) {
+        code = responseObj.code as ErrorCode;
+      }
+
       const msgValue = responseObj.message;
       // Handle both string and string[] from NestJS
       message = Array.isArray(msgValue)
         ? msgValue.join(', ')
         : ((msgValue as string) ?? exception.message);
+    } else if (typeof exceptionResponse === 'string') {
+      message = exceptionResponse;
     } else {
       message = exception.message;
+    }
+
+    // Determine error code based on status if not extracted from response
+    if (code === undefined) {
+      if (status === HttpStatus.UNAUTHORIZED) {
+        code = ErrorCode.UNAUTHORIZED;
+      } else if (status === HttpStatus.FORBIDDEN) {
+        code = ErrorCode.FORBIDDEN;
+      } else if (status === HttpStatus.NOT_FOUND) {
+        code = ErrorCode.NOT_FOUND;
+      } else if (status === HttpStatus.CONFLICT) {
+        code = ErrorCode.DATABASE_CONFLICT_ERROR;
+      } else if (status === HttpStatus.SERVICE_UNAVAILABLE) {
+        code = ErrorCode.SERVICE_UNAVAILABLE;
+      } else if (status >= 500) {
+        code = ErrorCode.INTERNAL_SERVER_ERROR;
+      } else {
+        code = ErrorCode.BAD_REQUEST;
+      }
     }
 
     return {
@@ -261,7 +273,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     switch (dbError.code) {
       case UNIQUE_VIOLATION:
-        status = HttpStatus.BAD_REQUEST;
+        status = HttpStatus.CONFLICT;
         message = 'A record with this value already exists';
         code = ErrorCode.DATABASE_CONFLICT_ERROR;
         break;
