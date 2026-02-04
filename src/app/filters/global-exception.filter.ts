@@ -207,6 +207,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         code = ErrorCode.NOT_FOUND;
       } else if (status === HttpStatus.CONFLICT) {
         code = ErrorCode.DATABASE_CONFLICT_ERROR;
+      } else if (status === HttpStatus.SERVICE_UNAVAILABLE) {
+        code = ErrorCode.SERVICE_UNAVAILABLE;
       } else if (status >= 500) {
         code = ErrorCode.INTERNAL_SERVER_ERROR;
       } else {

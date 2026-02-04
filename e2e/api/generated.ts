@@ -29,6 +29,8 @@ import type {
   GetAuthOk200,
   GetAuthVerifyEmail200,
   GetAuthVerifyEmailParams,
+  GetJSONWebKeySet200,
+  GetJSONWebToken200,
   GetProductResponseDto,
   GetSession200,
   HealthControllerCheck200,
@@ -1006,6 +1008,22 @@ export const resetPasswordWithEmailOTP = (
   );
 };
 
+/**
+ * Get the JSON Web Key Set
+ */
+export const getJSONWebKeySet = (
+  options?: SecondParameter<typeof request<GetJSONWebKeySet200>>
+) => {
+  return request<GetJSONWebKeySet200>({ url: `/auth/jwks`, method: 'GET' }, options);
+};
+
+/**
+ * Get a JWT token
+ */
+export const getJSONWebToken = (options?: SecondParameter<typeof request<GetJSONWebToken200>>) => {
+  return request<GetJSONWebToken200>({ url: `/auth/token`, method: 'GET' }, options);
+};
+
 export type AppControllerGetHelloResult = NonNullable<
   Awaited<ReturnType<typeof appControllerGetHello>>
 >;
@@ -1159,3 +1177,5 @@ export type ForgetPasswordWithEmailOTPResult = NonNullable<
 export type ResetPasswordWithEmailOTPResult = NonNullable<
   Awaited<ReturnType<typeof resetPasswordWithEmailOTP>>
 >;
+export type GetJSONWebKeySetResult = NonNullable<Awaited<ReturnType<typeof getJSONWebKeySet>>>;
+export type GetJSONWebTokenResult = NonNullable<Awaited<ReturnType<typeof getJSONWebToken>>>;
