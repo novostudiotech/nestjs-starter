@@ -23,6 +23,8 @@ docker-compose.yml
 nest-cli.json
 commitlint.config.mjs
 lint-staged.config.mjs
+.syncfiles
+sync.sh
 
 # === Dependency patches ===
 patches/
