@@ -19,11 +19,202 @@ NC='\033[0m'
 
 # Global variables
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+CURRENT_DIR=$(pwd)
 SYNCFILES="$SCRIPT_DIR/.syncfiles"
 DRY_RUN=false
 FORCE=false
 VERBOSE=false
 APPLY_ALL=false
+EXCLUDES=()  # Array of exclusion patterns from .syncfiles
+
+# Detect diff tool with syntax highlighting
+DIFF_TOOL="diff"
+if command -v delta &> /dev/null; then
+  DIFF_TOOL="delta"
+elif command -v diff-so-fancy &> /dev/null; then
+  DIFF_TOOL="diff-so-fancy"
+fi
+
+# Pretty diff with syntax highlighting
+pretty_diff() {
+  local src="$1"
+  local dst="$2"
+  local lines="${3:-0}"  # 0 = no limit
+
+  case "$DIFF_TOOL" in
+    delta)
+      if [[ "$lines" -gt 0 ]]; then
+        diff -u --label "$dst" --label "$src" "$dst" "$src" 2>/dev/null | delta --paging=never --syntax-theme=Dracula | head -"$lines"
+      else
+        diff -u --label "$dst" --label "$src" "$dst" "$src" 2>/dev/null | delta --paging=never --syntax-theme=Dracula
+      fi
+      ;;
+    diff-so-fancy)
+      if [[ "$lines" -gt 0 ]]; then
+        diff -u "$dst" "$src" 2>/dev/null | diff-so-fancy | head -"$lines"
+      else
+        diff -u "$dst" "$src" 2>/dev/null | diff-so-fancy
+      fi
+      ;;
+    *)
+      if [[ "$lines" -gt 0 ]]; then
+        diff --color=always -u "$dst" "$src" 2>/dev/null | head -"$lines"
+      else
+        diff --color=always -u "$dst" "$src" 2>/dev/null
+      fi
+      ;;
+  esac
+  return 0
+}
+
+# Pretty diff for pager (full view)
+pretty_diff_pager() {
+  local src="$1"
+  local dst="$2"
+
+  case "$DIFF_TOOL" in
+    delta)
+      diff -u --label "$dst" --label "$src" "$dst" "$src" 2>/dev/null | delta --syntax-theme=Dracula
+      ;;
+    diff-so-fancy)
+      diff -u "$dst" "$src" 2>/dev/null | diff-so-fancy | less -R
+      ;;
+    *)
+      diff --color=always -u "$dst" "$src" 2>/dev/null | less -R
+      ;;
+  esac
+  return 0
+}
+
+# Pretty diff for directories (recursive with syntax highlighting)
+pretty_diff_dir_pager() {
+  local src="$1"
+  local dst="$2"
+
+  case "$DIFF_TOOL" in
+    delta)
+      diff -ru "$dst" "$src" 2>/dev/null | delta --syntax-theme=Dracula
+      ;;
+    diff-so-fancy)
+      diff -ru "$dst" "$src" 2>/dev/null | diff-so-fancy | less -R
+      ;;
+    *)
+      diff -ru --color=always "$dst" "$src" 2>/dev/null | less -R
+      ;;
+  esac
+  return 0
+}
+
+# Git-style diffstat for a single file
+# Returns: "filename | +N -M" format
+file_diffstat() {
+  local src="$1"
+  local dst="$2"
+  local base_path="$3"
+
+  # Get relative path from base
+  local rel_path="${src#$SRC/}"
+
+  # Count additions and deletions
+  local adds=0 dels=0
+  if [[ -f "$src" && -f "$dst" ]]; then
+    local diff_out
+    diff_out=$(diff "$dst" "$src" 2>/dev/null) || true
+    adds=$(echo "$diff_out" | grep -c '^>' || true)
+    dels=$(echo "$diff_out" | grep -c '^<' || true)
+  elif [[ -f "$src" && ! -f "$dst" ]]; then
+    adds=$(wc -l < "$src" | tr -d ' ')
+  elif [[ ! -f "$src" && -f "$dst" ]]; then
+    dels=$(wc -l < "$dst" | tr -d ' ')
+  fi
+
+  # Format output with colors
+  local stat=""
+  if [[ "$adds" -gt 0 ]]; then
+    stat="${GREEN}+${adds}${NC}"
+  fi
+  if [[ "$dels" -gt 0 ]]; then
+    [[ -n "$stat" ]] && stat="$stat "
+    stat="${stat}${RED}-${dels}${NC}"
+  fi
+  [[ -z "$stat" ]] && stat="~"
+
+  printf "  %-50s | %s\n" "$rel_path" "$stat"
+}
+
+# Format directory diff output as git-style stat
+format_dir_diff() {
+  local diff_output="$1"
+  local base_path="$2"
+  local src_base="$3"
+  local dst_base="$4"
+
+  local modified=0 only_src=0 only_dst=0
+
+  while IFS= read -r line; do
+    [[ -z "$line" ]] && continue
+
+    if [[ "$line" == "Files "* ]]; then
+      # "Files X and Y differ"
+      local file_path
+      file_path=$(echo "$line" | sed 's/Files \(.*\) and .* differ/\1/')
+      local rel_path="${file_path#$src_base/}"
+      rel_path="${rel_path#$dst_base/}"
+
+      # Get actual diff stats
+      local src_file="$src_base/$rel_path"
+      local dst_file="$dst_base/$rel_path"
+      local adds=0 dels=0
+      if [[ -f "$src_file" && -f "$dst_file" ]]; then
+        local d
+        d=$(diff "$dst_file" "$src_file" 2>/dev/null) || true
+        adds=$(echo "$d" | grep -c '^>' || true)
+        dels=$(echo "$d" | grep -c '^<' || true)
+      fi
+
+      local stat=""
+      [[ "$adds" -gt 0 ]] && stat="${GREEN}+${adds}${NC}"
+      if [[ "$dels" -gt 0 ]]; then
+        [[ -n "$stat" ]] && stat="$stat "
+        stat="${stat}${RED}-${dels}${NC}"
+      fi
+      [[ -z "$stat" ]] && stat="~"
+
+      printf "  %-50s | %b\n" "$rel_path" "$stat"
+      ((modified++))
+
+    elif [[ "$line" == "Only in "* ]]; then
+      # "Only in /path: filename"
+      local dir_part file_part
+      dir_part=$(echo "$line" | sed 's/Only in \(.*\): .*/\1/')
+      file_part=$(echo "$line" | sed 's/Only in .*: //')
+
+      # Determine if it's in source or destination
+      if [[ "$dir_part" == "$src_base"* ]]; then
+        local rel_dir="${dir_part#$src_base}"
+        rel_dir="${rel_dir#/}"
+        local rel="$file_part"
+        [[ -n "$rel_dir" ]] && rel="$rel_dir/$file_part"
+        printf "  ${GREEN}%-50s${NC} | ${GREEN}(new)${NC}\n" "$rel"
+        ((only_src++))
+      else
+        local rel_dir="${dir_part#$dst_base}"
+        rel_dir="${rel_dir#/}"
+        local rel="$file_part"
+        [[ -n "$rel_dir" ]] && rel="$rel_dir/$file_part"
+        printf "  ${YELLOW}%-50s${NC} | ${YELLOW}(only in target)${NC}\n" "$rel"
+        ((only_dst++))
+      fi
+    fi
+  done <<< "$diff_output"
+
+  # Summary
+  local total=$((modified + only_src + only_dst))
+  if [[ $total -gt 0 ]]; then
+    echo ""
+    echo -e "  ${CYAN}$total file(s):${NC} $modified modified, ${GREEN}$only_src new${NC}, ${RED}$only_dst removed${NC}"
+  fi
+}
 
 usage() {
   echo "Sync files between template and projects"
@@ -51,15 +242,51 @@ log_success() { echo -e "${GREEN}✓${NC} $1"; }
 log_warning() { echo -e "${YELLOW}!${NC} $1"; }
 log_error() { echo -e "${RED}✗${NC} $1"; }
 
-# Read .syncfiles
+# Parse excludes from .syncfiles (must be called before read_syncfiles)
+parse_excludes() {
+  if [[ ! -f "$SYNCFILES" ]]; then
+    return
+  fi
+
+  while IFS= read -r line; do
+    # Skip comments and empty lines
+    [[ "$line" =~ ^# ]] && continue
+    [[ -z "$line" ]] && continue
+    # Trim trailing whitespace
+    line=$(echo "$line" | sed 's/[[:space:]]*$//')
+    # Check for exclusion pattern
+    if [[ "$line" == !* ]]; then
+      # Remove ! prefix and trailing slash, add to excludes
+      local pattern="${line#!}"
+      pattern="${pattern%/}"
+      EXCLUDES+=("$pattern")
+    fi
+  done < "$SYNCFILES"
+}
+
+# Read .syncfiles paths (excludes must be parsed separately first)
 read_syncfiles() {
   if [[ ! -f "$SYNCFILES" ]]; then
     log_error ".syncfiles not found in $SCRIPT_DIR"
     exit 1
   fi
 
-  # Read file, remove comments and empty lines
-  grep -v '^#' "$SYNCFILES" | grep -v '^$' | sed 's/[[:space:]]*$//'
+  # Output non-exclusion paths
+  grep -v '^#' "$SYNCFILES" | grep -v '^!' | grep -v '^$' | sed 's/[[:space:]]*$//'
+}
+
+# Check if path should be excluded
+is_excluded() {
+  local path="$1"
+  path="${path%/}"  # Remove trailing slash
+
+  for pattern in "${EXCLUDES[@]}"; do
+    # Check if path starts with pattern or equals pattern
+    if [[ "$path" == "$pattern" ]] || [[ "$path" == "$pattern"/* ]]; then
+      return 0  # Excluded
+    fi
+  done
+  return 1  # Not excluded
 }
 
 # Show diff for file
@@ -109,15 +336,15 @@ sync_path() {
       return
     fi
     if [[ "$FORCE" == true ]] || [[ "$APPLY_ALL" == true ]]; then
-      copy_path "$src_check" "$dst_check"
+      copy_path "$src_check" "$dst_check" "$path"
       log_success "Copied"
       return
     fi
-    read -p "  Copy? [y/n/a/q] " -n 1 -r
+    read -p "  Copy? [y/n/a/q] " -n 1 -r < /dev/tty
     echo
     case $REPLY in
-      y|Y) copy_path "$src_check" "$dst_check"; log_success "Copied" ;;
-      a|A) APPLY_ALL=true; copy_path "$src_check" "$dst_check"; log_success "Copied" ;;
+      y|Y) copy_path "$src_check" "$dst_check" "$path"; log_success "Copied" ;;
+      a|A) APPLY_ALL=true; copy_path "$src_check" "$dst_check" "$path"; log_success "Copied" ;;
       q|Q) echo "Exit"; exit 0 ;;
       *) log_info "Skipped" ;;
     esac
@@ -126,23 +353,30 @@ sync_path() {
 
   # Both exist - compare
   if [[ -d "$src_check" ]]; then
-    # Directory - use diff -rq
+    # Directory - use diff -rq, filtering out excluded paths
     local diff_output
     diff_output=$(diff -rq "$src_check" "$dst_check" 2>/dev/null) || true
+
+    # Filter out excluded paths from diff output
+    if [[ ${#EXCLUDES[@]} -gt 0 ]]; then
+      for pattern in "${EXCLUDES[@]}"; do
+        if [[ "$pattern" == "${path%/}"/* ]]; then
+          local rel_pattern="${pattern#${path%/}/}"
+          # Filter lines containing this pattern (handles /migrations: and /migrations/)
+          diff_output=$(echo "$diff_output" | grep -vE "/${rel_pattern}(:|/|$)" || true)
+        fi
+      done
+    fi
 
     if [[ -z "$diff_output" ]]; then
       log_success "No changes"
       return
     fi
 
-    echo "$diff_output" | head -20
-    local diff_count
-    diff_count=$(echo "$diff_output" | wc -l | tr -d ' ')
-    if [[ "$diff_count" -gt 20 ]]; then
-      echo "  ... and $((diff_count - 20)) more differences"
-    fi
+    # Show git-style stat output
+    format_dir_diff "$diff_output" "$path" "$src_check" "$dst_check"
   else
-    # File - show diff
+    # File - show diff with syntax highlighting
     local diff_output
     diff_output=$(diff -u "$dst_check" "$src_check" 2>/dev/null) || true
 
@@ -151,7 +385,7 @@ sync_path() {
       return
     fi
 
-    echo "$diff_output" | head -30
+    pretty_diff "$src_check" "$dst_check" 30
     local diff_lines
     diff_lines=$(echo "$diff_output" | wc -l | tr -d ' ')
     if [[ "$diff_lines" -gt 30 ]]; then
@@ -170,47 +404,74 @@ sync_path() {
     return
   fi
 
-  read -p "  Apply? [y/n/d/a/q] (d=full diff) " -n 1 -r
+  read -p "  Apply? [y/n/d/a/q] (d=full diff) " -n 1 -r < /dev/tty
   echo
   case $REPLY in
-    y|Y) copy_path "$src_check" "$dst_check"; log_success "Updated" ;;
+    y|Y) copy_path "$src_check" "$dst_check" "$path"; log_success "Updated" ;;
     d|D)
       if [[ -d "$src_check" ]]; then
-        diff -r "$src_check" "$dst_check" 2>/dev/null | less || true
+        pretty_diff_dir_pager "$src_check" "$dst_check" || true
       else
-        diff --color=always -u "$dst_check" "$src_check" | less
+        pretty_diff_pager "$src_check" "$dst_check" || true
       fi
       # Ask again
-      read -p "  Apply? [y/n/a/q] " -n 1 -r
+      read -p "  Apply? [y/n/a/q] " -n 1 -r < /dev/tty
       echo
       case $REPLY in
-        y|Y) copy_path "$src_check" "$dst_check"; log_success "Updated" ;;
-        a|A) APPLY_ALL=true; copy_path "$src_check" "$dst_check"; log_success "Updated" ;;
+        y|Y) copy_path "$src_check" "$dst_check" "$path"; log_success "Updated" ;;
+        a|A) APPLY_ALL=true; copy_path "$src_check" "$dst_check" "$path"; log_success "Updated" ;;
         q|Q) echo "Exit"; exit 0 ;;
         *) log_info "Skipped" ;;
       esac
       ;;
-    a|A) APPLY_ALL=true; copy_path "$src_check" "$dst_check"; log_success "Updated" ;;
+    a|A) APPLY_ALL=true; copy_path "$src_check" "$dst_check" "$path"; log_success "Updated" ;;
     q|Q) echo "Exit"; exit 0 ;;
     *) log_info "Skipped" ;;
   esac
+}
+
+# Build rsync exclude args from EXCLUDES array
+build_rsync_excludes() {
+  local base_path="$1"
+  local rsync_args=()
+
+  # Default excludes
+  rsync_args+=(--exclude='node_modules')
+  rsync_args+=(--exclude='dist')
+  rsync_args+=(--exclude='.git')
+  rsync_args+=(--exclude='*.log')
+  rsync_args+=(--exclude='.DS_Store')
+
+  # Add custom excludes from .syncfiles
+  for pattern in "${EXCLUDES[@]}"; do
+    # Convert absolute pattern to relative for rsync
+    # e.g., src/app/db/migrations -> db/migrations (if base is src/app)
+    if [[ "$pattern" == "$base_path"/* ]]; then
+      local rel_pattern="${pattern#$base_path/}"
+      rsync_args+=(--exclude="$rel_pattern")
+    fi
+  done
+
+  printf '%s\n' "${rsync_args[@]}"
 }
 
 # Copy file or directory
 copy_path() {
   local src="$1"
   local dst="$2"
+  local base_path="$3"  # Original path from .syncfiles
 
   if [[ -d "$src" ]]; then
-    # Directory - use rsync WITHOUT --delete to preserve local files (migrations etc.)
+    # Directory - use rsync WITHOUT --delete to preserve local files
     mkdir -p "$dst"
-    rsync -av \
-      --exclude='node_modules' \
-      --exclude='dist' \
-      --exclude='.git' \
-      --exclude='*.log' \
-      --exclude='.DS_Store' \
-      "$src/" "$dst/" > /dev/null
+
+    # Build exclude args
+    local -a rsync_excludes
+    while IFS= read -r arg; do
+      rsync_excludes+=("$arg")
+    done < <(build_rsync_excludes "${base_path%/}")
+
+    rsync -av "${rsync_excludes[@]}" "$src/" "$dst/" > /dev/null
   else
     # File - simple cp
     mkdir -p "$(dirname "$dst")"
@@ -251,6 +512,28 @@ parse_args() {
   done
 }
 
+# Check if git working directory is clean
+check_git_clean() {
+  local dir="$1"
+  local name="$2"
+
+  if [[ ! -d "$dir/.git" ]]; then
+    return 0  # Not a git repo, skip check
+  fi
+
+  local status
+  status=$(cd "$dir" && git status --porcelain 2>/dev/null)
+
+  if [[ -n "$status" ]]; then
+    log_error "Uncommitted changes in $name ($dir)"
+    echo ""
+    echo "Please commit or stash your changes before syncing:"
+    cd "$dir" && git status --short
+    echo ""
+    exit 1
+  fi
+}
+
 main() {
   parse_args "$@"
 
@@ -261,13 +544,18 @@ main() {
   echo ""
 
   if [[ "$DIRECTION" == "from" ]]; then
-    echo -e "${GREEN}Direction:${NC} $TARGET_PATH → $SCRIPT_DIR"
+    echo -e "${GREEN}Direction:${NC} $TARGET_PATH → $CURRENT_DIR"
     SRC="$TARGET_PATH"
-    DST="$SCRIPT_DIR"
+    DST="$CURRENT_DIR"
   else
-    echo -e "${GREEN}Direction:${NC} $SCRIPT_DIR → $TARGET_PATH"
-    SRC="$SCRIPT_DIR"
+    echo -e "${GREEN}Direction:${NC} $CURRENT_DIR → $TARGET_PATH"
+    SRC="$CURRENT_DIR"
     DST="$TARGET_PATH"
+  fi
+
+  # Check for uncommitted changes (skip in dry-run mode)
+  if [[ "$DRY_RUN" != true ]]; then
+    check_git_clean "$DST" "target"
   fi
 
   if [[ "$DRY_RUN" == true ]]; then
@@ -280,6 +568,9 @@ main() {
 
   echo ""
   echo "Files to sync (from .syncfiles):"
+
+  # Parse exclusions first (in main shell scope)
+  parse_excludes
 
   # Read and process each path
   while IFS= read -r path; do

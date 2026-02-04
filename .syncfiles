@@ -1,11 +1,16 @@
 # Files and directories to sync between template and projects
 # Lines starting with # are comments, empty lines are ignored
+# Lines starting with ! are exclusions (won't be synced)
 
 # === Application core code ===
 src/app/
 src/admin/
 src/auth/
 src/notifications/
+src/media/
+
+# === Exclusions (project-specific files to skip) ===
+!src/app/db/migrations
 
 # === Configs and settings ===
 playwright.config.ts
