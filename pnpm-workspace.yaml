@@ -1,11 +1,6 @@
 auditConfig:
-  ignoreCves:
-    - GHSA-7h2j-956f-4vf2
+  ignoreGhsas:
     - GHSA-h25m-26qc-wcjf
-    - GHSA-9g9p-9gw9-jx7f
-    - GHSA-5f7q-jpqc-wp7h
-    - GHSA-xxjr-mmjv-4gpg
-    - GHSA-73rr-hh4g-fpgx
 
 ignoredBuiltDependencies:
   - '@scarf/scarf'
