@@ -16,6 +16,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiResponse,
 } from '@nestjs/swagger';
 import { createZodDto } from 'nestjs-zod';
@@ -121,6 +122,36 @@ export abstract class BaseAdminController<
 
   @Get()
   @ApiOperation({ summary: 'List all entities' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    schema: { type: 'number', default: 1 },
+    description: 'Page number',
+  })
+  @ApiQuery({
+    name: 'perPage',
+    required: false,
+    schema: { type: 'number', minimum: 1, maximum: 100, default: 10 },
+    description: 'Items per page',
+  })
+  @ApiQuery({
+    name: 'sort',
+    required: false,
+    schema: { type: 'string' },
+    description: 'Field name to sort by',
+  })
+  @ApiQuery({
+    name: 'order',
+    required: false,
+    schema: { type: 'string', enum: ['ASC', 'DESC'], default: 'ASC' },
+    description: 'Sort order',
+  })
+  @ApiQuery({
+    name: 'filter',
+    required: false,
+    schema: { type: 'string' },
+    description: 'JSON string with filter criteria',
+  })
   @ApiOkResponse({
     description: 'List of entities with pagination',
     type: AdminListResponseDto,
@@ -196,7 +227,7 @@ export abstract class BaseAdminController<
 
   @Get(':id')
   @ApiOperation({ summary: 'Get entity by ID' })
-  @ApiParam({ name: 'id', type: String })
+  @ApiParam({ name: 'id', schema: { type: 'string' } })
   @ApiOkResponse({ description: 'Entity details' })
   @ApiResponse({ status: 404, type: ErrorResponseDto })
   async findOne(@Param('id') id: string): Promise<TEntity> {
@@ -215,7 +246,7 @@ export abstract class BaseAdminController<
 
   @Put(':id')
   @ApiOperation({ summary: 'Update an entity' })
-  @ApiParam({ name: 'id', type: String })
+  @ApiParam({ name: 'id', schema: { type: 'string' } })
   @ApiBody({ description: 'Entity data' })
   @ApiOkResponse({ description: 'Entity updated successfully' })
   @ApiResponse({ status: 404, type: ErrorResponseDto })
@@ -236,7 +267,7 @@ export abstract class BaseAdminController<
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete an entity' })
-  @ApiParam({ name: 'id', type: String })
+  @ApiParam({ name: 'id', schema: { type: 'string' } })
   @ApiOkResponse({ description: 'Entity deleted successfully' })
   @ApiResponse({ status: 404, type: ErrorResponseDto })
   async remove(@Param('id') id: string): Promise<{ id: string }> {
