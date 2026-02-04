@@ -69,7 +69,7 @@ git clone git@github.com:novostudiotech/nestjs-foundation.git my-project
 cd my-project
 
 # Run initialization wizard
-pnpm init:project
+pnpm init-project
 ```
 
 The wizard will:

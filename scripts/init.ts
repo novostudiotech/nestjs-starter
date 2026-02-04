@@ -13,7 +13,7 @@
  * 7. Run database migrations (optional)
  *
  * Usage:
- *   pnpm init:project
+ *   pnpm init
  *   # or
  *   ts-node init.ts
  *
@@ -553,16 +553,16 @@ function setupGit(config: ProjectConfig, rootDir: string): void {
 }
 
 function cleanupPackageJson(rootDir: string): void {
-  log.step('Removing init:project script from package.json...');
+  log.step('Removing init-project script from package.json...');
 
   const packageJsonPath = join(rootDir, 'package.json');
   try {
     const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
 
-    // Remove init:project script
-    if (packageJson.scripts?.['init:project']) {
+    // Remove init-project script
+    if (packageJson.scripts?.['init-project']) {
       // Use destructuring to avoid delete operator
-      const { 'init:project': _removed, ...restScripts } = packageJson.scripts;
+      const { 'init-project': _removed, ...restScripts } = packageJson.scripts;
       packageJson.scripts = restScripts;
       // lgtm[js/file-system-race]
       // codeql[js/file-system-race]: Init script runs once in controlled environment

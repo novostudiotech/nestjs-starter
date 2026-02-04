@@ -6,7 +6,8 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "init:project": "ts-node init.ts",
+    "init-project": "./scripts/init.ts",
+    "sync": "./scripts/sync.sh",
     "dev": "NODE_OPTIONS='-r ./env.js' nest start --watch",
     "dev:email": "email dev --dir src/notifications/channels/email/templates --port 3001",
     "build": "nest build",

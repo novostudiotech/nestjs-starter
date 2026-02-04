@@ -19,8 +19,9 @@ NC='\033[0m'
 
 # Global variables
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+PROJECT_ROOT=$(cd "$SCRIPT_DIR/.." && pwd)
 CURRENT_DIR=$(pwd)
-SYNCFILES="$SCRIPT_DIR/.syncfiles"
+SYNCFILES="$PROJECT_ROOT/.syncfiles"
 DRY_RUN=false
 FORCE=false
 VERBOSE=false
@@ -45,23 +46,23 @@ pretty_diff() {
   case "$DIFF_TOOL" in
     delta)
       if [[ "$lines" -gt 0 ]]; then
-        diff -u --label "$dst" --label "$src" "$dst" "$src" 2>/dev/null | delta --paging=never --syntax-theme=Dracula | head -"$lines"
+        diff -u --label "$dst" --label "$src" "$dst" "$src" 2>/dev/null | delta --paging=never --syntax-theme=Dracula | head -"$lines" || true
       else
-        diff -u --label "$dst" --label "$src" "$dst" "$src" 2>/dev/null | delta --paging=never --syntax-theme=Dracula
+        diff -u --label "$dst" --label "$src" "$dst" "$src" 2>/dev/null | delta --paging=never --syntax-theme=Dracula || true
       fi
       ;;
     diff-so-fancy)
       if [[ "$lines" -gt 0 ]]; then
-        diff -u "$dst" "$src" 2>/dev/null | diff-so-fancy | head -"$lines"
+        diff -u "$dst" "$src" 2>/dev/null | diff-so-fancy | head -"$lines" || true
       else
-        diff -u "$dst" "$src" 2>/dev/null | diff-so-fancy
+        diff -u "$dst" "$src" 2>/dev/null | diff-so-fancy || true
       fi
       ;;
     *)
       if [[ "$lines" -gt 0 ]]; then
-        diff --color=always -u "$dst" "$src" 2>/dev/null | head -"$lines"
+        diff --color=always -u "$dst" "$src" 2>/dev/null | head -"$lines" || true
       else
-        diff --color=always -u "$dst" "$src" 2>/dev/null
+        diff --color=always -u "$dst" "$src" 2>/dev/null || true
       fi
       ;;
   esac
@@ -428,7 +429,7 @@ sync_path() {
   fi
 
   if [[ "$FORCE" == true ]] || [[ "$APPLY_ALL" == true ]]; then
-    copy_path "$src_check" "$dst_check"
+    copy_path "$src_check" "$dst_check" "$path"
     log_success "Updated"
     return
   fi
