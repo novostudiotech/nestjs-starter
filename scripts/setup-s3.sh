@@ -39,7 +39,7 @@ if [ ! -f "$ENV_FILE" ]; then
 fi
 
 # Load environment variables from .env
-export $(grep -E '^(S3_(ENDPOINT|BUCKET|ACCESS_KEY|SECRET_KEY)|APP_ENV)=' "$ENV_FILE" | xargs)
+export $(grep -E '^(S3_(REGION|ENDPOINT|BUCKET|ACCESS_KEY|SECRET_KEY|PREFIX)|APP_ENV)=' "$ENV_FILE" | xargs)
 
 # Validate required variables
 missing_vars=()
@@ -70,9 +70,10 @@ echo ""
 
 # Configure AWS CLI profile
 PROFILE_NAME="bailaspot-s3-setup"
+REGION="${S3_REGION:-us-east-1}"
 aws configure set aws_access_key_id "$S3_ACCESS_KEY" --profile "$PROFILE_NAME"
 aws configure set aws_secret_access_key "$S3_SECRET_KEY" --profile "$PROFILE_NAME"
-aws configure set region "us-east-1" --profile "$PROFILE_NAME"
+aws configure set region "$REGION" --profile "$PROFILE_NAME"
 
 # ============================================================================
 # 1. CORS Configuration (for browser uploads)

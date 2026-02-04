@@ -85,6 +85,8 @@ import type {
   UpdateUser200,
   UpdateUserBody,
   UpdateUserDto,
+  UploadRequestDto,
+  UploadResponseDto,
   UserEntity,
   VerifyEmailWithOTP200,
   VerifyEmailWithOTPBody,
@@ -388,6 +390,24 @@ export const adminVerificationEntityControllerRemove = (
   options?: SecondParameter<typeof request<void>>
 ) => {
   return request<void>({ url: `/admin/verification/${id}`, method: 'DELETE' }, options);
+};
+
+/**
+ * @summary Generate a presigned URL for file upload
+ */
+export const mediaControllerGenerateUploadUrl = (
+  uploadRequestDto: UploadRequestDto,
+  options?: SecondParameter<typeof request<UploadResponseDto>>
+) => {
+  return request<UploadResponseDto>(
+    {
+      url: `/media/upload-url`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: uploadRequestDto,
+    },
+    options
+  );
 };
 
 /**
@@ -1132,6 +1152,9 @@ export type AdminVerificationEntityControllerUpdateResult = NonNullable<
 >;
 export type AdminVerificationEntityControllerRemoveResult = NonNullable<
   Awaited<ReturnType<typeof adminVerificationEntityControllerRemove>>
+>;
+export type MediaControllerGenerateUploadUrlResult = NonNullable<
+  Awaited<ReturnType<typeof mediaControllerGenerateUploadUrl>>
 >;
 export type ProductsControllerCreateResult = NonNullable<
   Awaited<ReturnType<typeof productsControllerCreate>>

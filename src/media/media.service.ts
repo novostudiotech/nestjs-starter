@@ -74,6 +74,7 @@ export class MediaService {
       Bucket: this.bucket,
       Key: key,
       ContentType: dto.contentType,
+      ACL: 'public-read',
     });
 
     const uploadUrl = await getSignedUrl(this.s3Client, command, {

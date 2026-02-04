@@ -9,16 +9,25 @@ import type { AdminAccountEntityControllerFindAllOrder } from './adminAccountEnt
 
 export type AdminAccountEntityControllerFindAllParams = {
   /**
-   * @maximum 9007199254740991
-   * @exclusiveMinimum 0
+   * Page number
    */
   page?: number;
   /**
+   * Items per page
    * @minimum 1
    * @maximum 100
    */
   perPage?: number;
+  /**
+   * Field name to sort by
+   */
   sort?: string;
+  /**
+   * Sort order
+   */
   order?: AdminAccountEntityControllerFindAllOrder;
+  /**
+   * JSON string with filter criteria
+   */
   filter?: string;
 };
