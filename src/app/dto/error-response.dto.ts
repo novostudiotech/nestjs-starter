@@ -179,7 +179,7 @@ export class ErrorResponseDto {
 
   @ApiProperty({
     description: 'Request path',
-    example: '/api/products',
+    example: '/',
   })
   path: string;
 

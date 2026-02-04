@@ -23,12 +23,14 @@ docker-compose.yml
 nest-cli.json
 commitlint.config.mjs
 lint-staged.config.mjs
-.syncfiles
-sync.sh
+
+# === Scripts ===
+scripts/setup-s3.sh
 
 # === Dependency patches ===
 patches/
 
 # === Documentation (optional) ===
+docs/file-upload-setup.md
 # SETUP.md
 # README.md

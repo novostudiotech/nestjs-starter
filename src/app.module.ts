@@ -15,6 +15,7 @@ import { AppController } from '#/app.controller';
 import { AppService } from '#/app.service';
 import { type BetterAuthOtpType, getBetterAuthConfig } from '#/auth/auth.config';
 import { AuthControllersModule } from '#/auth/auth.module';
+import { MediaModule } from '#/media';
 import { NotificationsModule, NotificationsService, NotificationType } from '#/notifications';
 /* remove_after_init_start */
 import { ProductsModule } from '#/products/products.module';
@@ -109,6 +110,7 @@ import { ProductsModule } from '#/products/products.module';
     }),
     AdminModule.forRoot(), // Register all admin entities from adminRegistry
     AuthControllersModule,
+    MediaModule,
     /* remove_after_init_start */
     ProductsModule,
     /* remove_after_init_end */
