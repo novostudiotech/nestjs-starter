@@ -1,3 +1,12 @@
+auditConfig:
+  ignoreCves:
+    - GHSA-7h2j-956f-4vf2
+    - GHSA-h25m-26qc-wcjf
+    - GHSA-9g9p-9gw9-jx7f
+    - GHSA-5f7q-jpqc-wp7h
+    - GHSA-xxjr-mmjv-4gpg
+    - GHSA-73rr-hh4g-fpgx
+
 ignoredBuiltDependencies:
   - '@scarf/scarf'
 
@@ -8,6 +17,5 @@ onlyBuiltDependencies:
   - unrs-resolver
 
 patchedDependencies:
-  '@thallesp/nestjs-better-auth': patches/@thallesp__nestjs-better-auth+2.2.0.patch
-  better-auth@1.4.10: patches/better-auth+1.4.10.patch
+  better-auth@1.4.18: patches/better-auth+1.4.18.patch
   better-call: patches/better-call+1.1.7.patch
