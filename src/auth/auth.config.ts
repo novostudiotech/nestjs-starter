@@ -24,6 +24,11 @@ export interface BetterAuthConfigOptions {
   databaseUrl: string;
   secret: string;
   /**
+   * Base URL of the auth server (e.g., "https://api.example.com")
+   * Used for generating callback URLs and links
+   */
+  baseURL?: string;
+  /**
    * Trusted origins for CORS (array of origin patterns)
    */
   trustedOrigins: string[];
@@ -44,12 +49,6 @@ export interface BetterAuthConfigOptions {
    * OTP expiration time in seconds (default: 300 = 5 minutes)
    */
   otpExpiresIn?: number;
-  /**
-   * Optional root domain for cookies (e.g., "example.com")
-   * If provided, cookies will be set for this domain and all subdomains
-   * If not provided or undefined, cookies will be set for the current domain only
-   */
-  cookieDomain?: string;
 }
 
 /**
@@ -60,18 +59,19 @@ export interface BetterAuthConfigOptions {
 export function getBetterAuthConfig({
   databaseUrl,
   secret,
+  baseURL,
   trustedOrigins,
   isTest,
   isProd,
   sendOtp,
   otpExpiresIn = 300,
-  cookieDomain,
 }: BetterAuthConfigOptions) {
   return betterAuth({
     database: new Pool({
       connectionString: databaseUrl,
     }),
     secret,
+    baseURL,
     basePath: '/auth',
     trustedOrigins,
     hooks: {}, // minimum required to use hook decorators
@@ -123,14 +123,6 @@ export function getBetterAuthConfig({
       // Disable origin check in test environment to allow same-origin requests without Origin header
       // This is safe for tests as they run in a controlled environment
       disableOriginCheck: isTest,
-      // TODO: Temporary solution for development to enable cross-site cookies with localhost
-      // This should be reviewed and potentially removed or made conditional for production
-      defaultCookieAttributes: {
-        ...(cookieDomain && { domain: cookieDomain }),
-        sameSite: 'none',
-        secure: true,
-        partitioned: true,
-      },
     },
   });
 }

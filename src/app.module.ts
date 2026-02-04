@@ -75,6 +75,7 @@ import { ProductsModule } from '#/products/products.module';
       useFactory: (configService: ConfigService, notificationsService: NotificationsService) => {
         const databaseUrl = configService.get('DATABASE_URL');
         const secret = configService.get('AUTH_SECRET');
+        const publicUrl = configService.get('PUBLIC_URL');
         const corsOriginsString = configService.get('CORS_ORIGINS') || '';
         const appEnv = configService.get('APP_ENV');
 
@@ -89,6 +90,7 @@ import { ProductsModule } from '#/products/products.module';
           auth: getBetterAuthConfig({
             databaseUrl,
             secret,
+            baseURL: publicUrl,
             trustedOrigins: getTrustedOrigins(corsOriginsString),
             isTest: appEnv === 'test',
             isProd: appEnv === 'prod',
