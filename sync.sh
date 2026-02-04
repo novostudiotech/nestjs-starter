@@ -25,6 +25,7 @@ DRY_RUN=false
 FORCE=false
 VERBOSE=false
 APPLY_ALL=false
+IGNORE_UNCOMMITTED=false
 EXCLUDES=()  # Array of exclusion patterns from .syncfiles
 
 # Detect diff tool with syntax highlighting
@@ -86,20 +87,53 @@ pretty_diff_pager() {
   return 0
 }
 
+# Build exclude args for diff command
+# Usage: build_diff_excludes "base_path"
+# Outputs exclude args to stdout, one per line
+# Note: diff --exclude only matches the last path component (basename)
+build_diff_excludes() {
+  local base_path="$1"
+
+  # Default excludes
+  echo "--exclude=node_modules"
+  echo "--exclude=dist"
+  echo "--exclude=.git"
+  echo "--exclude=*.log"
+  echo "--exclude=.DS_Store"
+
+  # Add custom excludes from .syncfiles
+  # diff --exclude only works with basenames, so we extract the last component
+  for pattern in "${EXCLUDES[@]}"; do
+    if [[ "$pattern" == "${base_path%/}"/* ]]; then
+      local rel_pattern="${pattern#${base_path%/}/}"
+      # Extract basename for diff --exclude (it only matches last path component)
+      local basename_pattern="${rel_pattern##*/}"
+      echo "--exclude=$basename_pattern"
+    fi
+  done
+}
+
 # Pretty diff for directories (recursive with syntax highlighting)
 pretty_diff_dir_pager() {
   local src="$1"
   local dst="$2"
+  local base_path="$3"  # Original path from .syncfiles for exclusion filtering
+
+  # Build exclude args for diff
+  local -a diff_excludes=()
+  while IFS= read -r arg; do
+    diff_excludes+=("$arg")
+  done < <(build_diff_excludes "$base_path")
 
   case "$DIFF_TOOL" in
     delta)
-      diff -ru "$dst" "$src" 2>/dev/null | delta --syntax-theme=Dracula
+      diff -ru "${diff_excludes[@]}" "$dst" "$src" 2>/dev/null | delta --syntax-theme=Dracula
       ;;
     diff-so-fancy)
-      diff -ru "$dst" "$src" 2>/dev/null | diff-so-fancy | less -R
+      diff -ru "${diff_excludes[@]}" "$dst" "$src" 2>/dev/null | diff-so-fancy | less -R
       ;;
     *)
-      diff -ru --color=always "$dst" "$src" 2>/dev/null | less -R
+      diff -ru "${diff_excludes[@]}" --color=always "$dst" "$src" 2>/dev/null | less -R
       ;;
   esac
   return 0
@@ -226,9 +260,10 @@ usage() {
   echo "  to <path>     Push changes TO the specified repo from current"
   echo ""
   echo "Options:"
-  echo "  --dry-run     Show what would change without applying"
-  echo "  --force       Apply all without prompts"
-  echo "  --verbose     Verbose output"
+  echo "  --dry-run              Show what would change without applying"
+  echo "  --force                Apply all without prompts"
+  echo "  --ignore-uncommitted   Skip uncommitted changes check"
+  echo "  --verbose              Verbose output"
   echo ""
   echo "Examples:"
   echo "  ./sync.sh from ../nestjs-foundation           # pull from template"
@@ -353,20 +388,14 @@ sync_path() {
 
   # Both exist - compare
   if [[ -d "$src_check" ]]; then
-    # Directory - use diff -rq, filtering out excluded paths
-    local diff_output
-    diff_output=$(diff -rq "$src_check" "$dst_check" 2>/dev/null) || true
+    # Directory - use diff -rq with exclude args
+    local -a diff_excludes=()
+    while IFS= read -r arg; do
+      diff_excludes+=("$arg")
+    done < <(build_diff_excludes "$path")
 
-    # Filter out excluded paths from diff output
-    if [[ ${#EXCLUDES[@]} -gt 0 ]]; then
-      for pattern in "${EXCLUDES[@]}"; do
-        if [[ "$pattern" == "${path%/}"/* ]]; then
-          local rel_pattern="${pattern#${path%/}/}"
-          # Filter lines containing this pattern (handles /migrations: and /migrations/)
-          diff_output=$(echo "$diff_output" | grep -vE "/${rel_pattern}(:|/|$)" || true)
-        fi
-      done
-    fi
+    local diff_output
+    diff_output=$(diff -rq "${diff_excludes[@]}" "$src_check" "$dst_check" 2>/dev/null) || true
 
     if [[ -z "$diff_output" ]]; then
       log_success "No changes"
@@ -410,7 +439,7 @@ sync_path() {
     y|Y) copy_path "$src_check" "$dst_check" "$path"; log_success "Updated" ;;
     d|D)
       if [[ -d "$src_check" ]]; then
-        pretty_diff_dir_pager "$src_check" "$dst_check" || true
+        pretty_diff_dir_pager "$src_check" "$dst_check" "$path" || true
       else
         pretty_diff_pager "$src_check" "$dst_check" || true
       fi
@@ -505,6 +534,7 @@ parse_args() {
     case "$1" in
       --dry-run) DRY_RUN=true ;;
       --force) FORCE=true ;;
+      --ignore-uncommitted) IGNORE_UNCOMMITTED=true ;;
       --verbose) VERBOSE=true ;;
       *) log_error "Unknown option: $1"; usage ;;
     esac
@@ -553,8 +583,8 @@ main() {
     DST="$TARGET_PATH"
   fi
 
-  # Check for uncommitted changes (skip in dry-run mode)
-  if [[ "$DRY_RUN" != true ]]; then
+  # Check for uncommitted changes (skip in dry-run mode or with --ignore-uncommitted)
+  if [[ "$DRY_RUN" != true && "$IGNORE_UNCOMMITTED" != true ]]; then
     check_git_clean "$DST" "target"
   fi
 
