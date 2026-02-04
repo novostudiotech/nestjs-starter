@@ -23,6 +23,8 @@ docker-compose.yml
 nest-cli.json
 commitlint.config.mjs
 lint-staged.config.mjs
+pnpm-workspace.yaml
+package.json
 
 # === Scripts ===
 scripts/setup-s3.sh
