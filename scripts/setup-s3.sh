@@ -38,8 +38,8 @@ if [ ! -f "$ENV_FILE" ]; then
     exit 1
 fi
 
-# Load environment variables from .env
-export $(grep -E '^(S3_(REGION|ENDPOINT|BUCKET|ACCESS_KEY|SECRET_KEY|PREFIX)|APP_ENV)=' "$ENV_FILE" | xargs)
+# Load environment variables from .env (S3_PREFIX is intentionally not loaded - policy applies to all prefixes)
+export $(grep -E '^(S3_(REGION|ENDPOINT|BUCKET|ACCESS_KEY|SECRET_KEY)|APP_ENV)=' "$ENV_FILE" | xargs)
 
 # Validate required variables
 missing_vars=()
@@ -53,8 +53,9 @@ if [ ${#missing_vars[@]} -ne 0 ]; then
     exit 1
 fi
 
-# Determine prefix (matches media.service.ts logic)
-PREFIX="${S3_PREFIX:-${APP_ENV:-local}}"
+# Note: S3_PREFIX is NOT used here - bucket policy applies to ALL prefixes
+# This allows the same bucket to be used across environments (local, staging, prod)
+echo -e "${YELLOW}Note: Bucket policy will apply to ALL prefixes (local/*, staging/*, prod/*, etc.)${NC}"
 
 # Set default endpoint for AWS S3 if not specified
 ENDPOINT_URL=""
@@ -65,7 +66,6 @@ else
     echo "Endpoint: AWS S3 (default)"
 fi
 echo "Bucket:   $S3_BUCKET"
-echo "Prefix:   $PREFIX"
 echo ""
 
 # Configure AWS CLI profile
@@ -133,14 +133,14 @@ PUBLIC_CONTEXTS=(
     "venue-photo"
 )
 
-# Build resource list for policy
+# Build resource list for policy (using wildcard for prefix to cover all environments)
 RESOURCES=""
 for ctx in "${PUBLIC_CONTEXTS[@]}"; do
     if [ -n "$RESOURCES" ]; then
         RESOURCES="$RESOURCES,"
     fi
     RESOURCES="$RESOURCES
-        \"arn:aws:s3:::${S3_BUCKET}/${PREFIX}/${ctx}/*\""
+        \"arn:aws:s3:::${S3_BUCKET}/*/${ctx}/*\""
 done
 
 POLICY_CONFIG=$(cat <<EOF
@@ -196,9 +196,9 @@ echo "  - http://localhost:5174"
 echo "  - https://bailaspot.com"
 echo "  - https://*.bailaspot.com"
 echo ""
-echo "Public read paths:"
+echo "Public read paths (all prefixes):"
 for ctx in "${PUBLIC_CONTEXTS[@]}"; do
-    echo "  - ${PREFIX}/${ctx}/*"
+    echo "  - */${ctx}/*"
 done
 echo ""
 echo -e "${YELLOW}To modify settings, edit this script and re-run it.${NC}"

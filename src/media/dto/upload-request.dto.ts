@@ -1,6 +1,6 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
-import { UploadContext } from '../enums';
+import { UploadContext } from '#/media/enums';
 
 const uploadContextValues = Object.values(UploadContext) as [string, ...string[]];
 

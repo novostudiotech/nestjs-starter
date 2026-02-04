@@ -106,7 +106,7 @@ export class MediaService {
       // Custom endpoint (e.g., DO Spaces, MinIO): https://endpoint/bucket/key
       return `${this.endpoint}/${this.bucket}/${key}`;
     }
-    // AWS S3: https://bucket.s3.region.amazonaws.com/key
+    // AWS S3: https://bucket.s3.amazonaws.com/key
     return `https://${this.bucket}.s3.amazonaws.com/${key}`;
   }
 
