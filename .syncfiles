@@ -13,6 +13,7 @@ src/media/
 !src/app/db/migrations
 
 # === Configs and settings ===
+.syncfiles
 playwright.config.ts
 biome.json
 jest.config.ts
@@ -27,6 +28,7 @@ pnpm-workspace.yaml
 package.json
 
 # === Scripts ===
+scripts/sync.sh
 scripts/setup-s3.sh
 
 # === Dependency patches ===
