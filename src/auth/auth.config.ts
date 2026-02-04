@@ -1,5 +1,5 @@
 import { betterAuth } from 'better-auth';
-import { emailOTP, openAPI } from 'better-auth/plugins';
+import { bearer, emailOTP, jwt, openAPI } from 'better-auth/plugins';
 import { Pool } from 'pg';
 import { uuidv7 } from 'uuidv7';
 
@@ -44,6 +44,12 @@ export interface BetterAuthConfigOptions {
    * OTP expiration time in seconds (default: 300 = 5 minutes)
    */
   otpExpiresIn?: number;
+  /**
+   * Optional root domain for cookies (e.g., "example.com")
+   * If provided, cookies will be set for this domain and all subdomains
+   * If not provided or undefined, cookies will be set for the current domain only
+   */
+  cookieDomain?: string;
 }
 
 /**
@@ -59,6 +65,7 @@ export function getBetterAuthConfig({
   isProd,
   sendOtp,
   otpExpiresIn = 300,
+  cookieDomain,
 }: BetterAuthConfigOptions) {
   return betterAuth({
     database: new Pool({
@@ -94,6 +101,8 @@ export function getBetterAuthConfig({
           }
         },
       }),
+      bearer(),
+      jwt(),
     ],
     user: {
       modelName: 'user',
@@ -114,6 +123,14 @@ export function getBetterAuthConfig({
       // Disable origin check in test environment to allow same-origin requests without Origin header
       // This is safe for tests as they run in a controlled environment
       disableOriginCheck: isTest,
+      // TODO: Temporary solution for development to enable cross-site cookies with localhost
+      // This should be reviewed and potentially removed or made conditional for production
+      defaultCookieAttributes: {
+        ...(cookieDomain && { domain: cookieDomain }),
+        sameSite: 'none',
+        secure: true,
+        partitioned: true,
+      },
     },
   });
 }

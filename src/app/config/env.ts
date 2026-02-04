@@ -33,7 +33,7 @@ const envSchema = z.object({
   // Examples: 'https://example.com', 'http://localhost:*', 'https://*.example.com'
   // Multiple: 'https://example.com,https://app.example.com'
   // Special: 'true' (allow all), 'false' (disable CORS)
-  CORS_ORIGINS: z.string().optional(),
+  CORS_ORIGINS: z.string().default('true'),
   APP_NAME: z.string().min(1, 'APP_NAME is required'),
 
   // Database
@@ -41,6 +41,12 @@ const envSchema = z.object({
 
   // Auth
   AUTH_SECRET: z.string().min(32, 'AUTH_SECRET must be at least 32 characters long'),
+
+  // Public URL - used for cookie domain configuration
+  // Examples: https://api.example.com, http://localhost:3000
+  // If set, cookies will be configured for the root domain (e.g., example.com)
+  // For localhost/IP addresses, cookie domain will not be set
+  PUBLIC_URL: z.string().url().optional(),
 
   // Email (Resend) - optional, but required for sending emails
   RESEND_API_KEY: z.string().optional(),
@@ -54,6 +60,16 @@ const envSchema = z.object({
     .or(z.literal(''))
     .transform((val) => (val === '' ? undefined : val)),
   SENTRY_ENVIRONMENT: z.string().optional(),
+
+  // S3-compatible storage (optional - for media uploads)
+  // If not configured, media upload endpoint returns 503
+  S3_REGION: z.string().optional(),
+  S3_ENDPOINT: z.string().url().optional(),
+  S3_BUCKET: z.string().optional(),
+  S3_ACCESS_KEY: z.string().optional(),
+  S3_SECRET_KEY: z.string().optional(),
+  S3_CDN_URL: z.string().url().optional(),
+  S3_PREFIX: z.string().optional(), // Defaults to APP_ENV if not set
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;
