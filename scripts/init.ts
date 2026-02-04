@@ -553,17 +553,25 @@ function setupGit(config: ProjectConfig, rootDir: string): void {
 }
 
 function cleanupPackageJson(rootDir: string): void {
-  log.step('Removing init-project script from package.json...');
+  log.step('Removing boilerplate scripts from package.json...');
 
   const packageJsonPath = join(rootDir, 'package.json');
   try {
     const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
 
-    // Remove init-project script
-    if (packageJson.scripts?.['init-project']) {
-      // Use destructuring to avoid delete operator
-      const { 'init-project': _removed, ...restScripts } = packageJson.scripts;
-      packageJson.scripts = restScripts;
+    // Remove boilerplate-only scripts
+    const scriptsToRemove = ['init-project', 'sync'];
+    let modified = false;
+
+    for (const scriptName of scriptsToRemove) {
+      if (packageJson.scripts?.[scriptName]) {
+        const { [scriptName]: _removed, ...restScripts } = packageJson.scripts;
+        packageJson.scripts = restScripts;
+        modified = true;
+      }
+    }
+
+    if (modified) {
       // lgtm[js/file-system-race]
       // codeql[js/file-system-race]: Init script runs once in controlled environment
       writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`, 'utf-8');
@@ -581,7 +589,8 @@ function cleanupBoilerplateFiles(config: ProjectConfig, rootDir: string): void {
     '~ROADMAP.md',
     '~ROADMAPv2.md',
     '.github/workflows/codeql.yml', // CodeQL is paid for private repos
-    'init.ts', // Remove this script after execution
+    'scripts', // Remove boilerplate scripts directory (init.ts, sync.sh)
+    '.syncfiles', // Remove sync configuration
   ];
 
   // Add products module files only if user wants to remove them
