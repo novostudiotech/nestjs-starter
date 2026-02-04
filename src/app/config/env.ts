@@ -33,7 +33,7 @@ const envSchema = z.object({
   // Examples: 'https://example.com', 'http://localhost:*', 'https://*.example.com'
   // Multiple: 'https://example.com,https://app.example.com'
   // Special: 'true' (allow all), 'false' (disable CORS)
-  CORS_ORIGINS: z.string().default('true'),
+  CORS_ORIGINS: z.string().optional(),
   APP_NAME: z.string().min(1, 'APP_NAME is required'),
 
   // Database
