@@ -12,7 +12,10 @@ export interface FooterProps {
 /**
  * Email footer component with copyright and optional support link
  */
-export default function Footer({ appName = 'NestJS Foundation', supportEmail }: FooterProps) {
+export default function Footer({
+  appName = 'NestJS Starter Boilerplate',
+  supportEmail,
+}: FooterProps) {
   return (
     <>
       <Hr style={styles.divider} />

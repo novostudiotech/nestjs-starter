@@ -1,4 +1,4 @@
-# NestJS Foundation
+# NestJS Starter Boilerplate
 
 **Production-ready NestJS boilerplate**
 

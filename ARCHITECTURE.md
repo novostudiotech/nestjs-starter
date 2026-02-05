@@ -1,6 +1,6 @@
 # Architecture Overview
 
-This document describes the architecture, design decisions, and patterns used in NestJS Foundation.
+This document describes the architecture, design decisions, and patterns used in NestJS Starter Boilerplate.
 
 ## Table of Contents
 
@@ -417,7 +417,7 @@ When adding new functionality, ask yourself:
 
 ## System Overview
 
-NestJS Foundation is a **production-ready backend boilerplate** built with a **modular monolith architecture**. The system is designed for:
+NestJS Starter Boilerplate is a **production-ready backend boilerplate** built with a **modular monolith architecture**. The system is designed for:
 
 - **Scalability**: Horizontally scalable via containerization
 - **Maintainability**: Clear separation of concerns, modular structure

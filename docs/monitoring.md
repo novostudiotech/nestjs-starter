@@ -1,6 +1,6 @@
 # Monitoring and Health Checks
 
-This document describes the health check and metrics monitoring setup for NestJS Foundation.
+This document describes the health check and metrics monitoring setup for NestJS Starter Boilerplate.
 
 ## Overview
 

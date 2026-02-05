@@ -22,7 +22,7 @@ export interface WelcomeEmailProps {
  */
 export default function WelcomeEmail({
   userName = 'Dancer',
-  appName = 'NestJS Foundation',
+  appName = 'NestJS Starter Boilerplate',
   dashboardUrl = 'https://nestjsfoundation.com/dashboard',
   logoUrl,
   supportEmail,

@@ -77,8 +77,8 @@ async function bootstrap() {
 
   // Setup Swagger
   const config = new DocumentBuilder()
-    .setTitle('NestJS Foundation API')
-    .setDescription('NestJS Foundation API Documentation')
+    .setTitle('NestJS Starter Boilerplate API')
+    .setDescription('NestJS Starter Boilerplate API Documentation')
     .setVersion('1.0')
     .build();
 

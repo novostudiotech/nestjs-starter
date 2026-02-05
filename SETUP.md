@@ -1,6 +1,6 @@
 # Setup Guide
 
-Quick start guide to get NestJS Foundation running locally.
+Quick start guide to get NestJS Starter Boilerplate running locally.
 
 ## Prerequisites
 
@@ -39,7 +39,7 @@ PORT=3000
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/nestjs_foundation?sslmode=disable
 TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/nestjs_foundation_test?sslmode=disable
 AUTH_SECRET=<paste-generated-secret-here>
-APP_NAME="NestJS Foundation"
+APP_NAME="NestJS Starter Boilerplate"
 ```
 
 > **⚠️ Security Warning**: `sslmode=disable` is intended for **local development only** and is insecure for production environments.

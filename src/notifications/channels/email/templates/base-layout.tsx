@@ -24,8 +24,8 @@ export interface BaseLayoutProps {
  * Provides consistent structure with header, content area, and footer.
  */
 export default function BaseLayout({
-  appName = 'NestJS Foundation',
-  previewText = 'Email from NestJS Foundation',
+  appName = 'NestJS Starter Boilerplate',
+  previewText = 'Email from NestJS Starter Boilerplate',
   children,
   logoUrl,
   supportEmail,

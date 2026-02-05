@@ -2,7 +2,7 @@
 /**
  * Project Initialization Script
  *
- * This script helps you set up a new project from the NestJS Foundation boilerplate.
+ * This script helps you set up a new project from the NestJS Starter Boilerplate boilerplate.
  * It will:
  * 1. Ask for project details (name, slug, database, etc.)
  * 2. Replace boilerplate values with your project values in files
@@ -158,7 +158,7 @@ function generateSecret(): string {
 }
 
 async function promptUser(): Promise<ProjectConfig> {
-  log.title('🚀 NestJS Foundation - Project Initialization');
+  log.title('🚀 NestJS Starter Boilerplate - Project Initialization');
 
   log.info('This wizard will help you set up a new project from the boilerplate.');
   log.info('The boilerplate works out of the box - this step is optional.');
@@ -325,7 +325,7 @@ function buildReplacementMap(config: ProjectConfig): ReplacementMap {
     exact: [
       { from: 'nestjs-starter', to: config.projectSlug },
       { from: 'nestjs_foundation', to: config.projectSnake },
-      { from: 'NestJS Foundation', to: config.projectName },
+      { from: 'NestJS Starter Boilerplate', to: config.projectName },
       { from: 'Production-ready NestJS boilerplate', to: config.projectDescription },
       { from: 'Novo Studio', to: config.authorName },
     ],
@@ -475,7 +475,7 @@ function buildEnvReplacementMap(config: ProjectConfig): ReplacementMap {
         to: `AUTH_SECRET=${config.authSecret}`,
       },
       {
-        from: 'APP_NAME="NestJS Foundation"',
+        from: 'APP_NAME="NestJS Starter Boilerplate"',
         to: `APP_NAME="${config.appName}"`,
       },
     ],

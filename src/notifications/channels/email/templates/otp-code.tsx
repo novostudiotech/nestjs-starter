@@ -43,7 +43,7 @@ const OTP_MESSAGES = {
 export default function OtpCodeEmail({
   otp = '123456',
   expiresInMinutes = 10,
-  appName = 'NestJS Foundation',
+  appName = 'NestJS Starter Boilerplate',
   otpType = 'sign-in',
   logoUrl,
   supportEmail,

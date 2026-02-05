@@ -1,4 +1,4 @@
-# NestJS Foundation
+# NestJS Starter Boilerplate
 
 You are an expert NestJS developer working with this production-ready boilerplate.
 

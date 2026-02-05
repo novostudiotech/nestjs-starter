@@ -11,7 +11,7 @@ export interface HeaderProps {
 /**
  * Email header component with optional logo and app name
  */
-export default function Header({ appName = 'NestJS Foundation', logoUrl }: HeaderProps) {
+export default function Header({ appName = 'NestJS Starter Boilerplate', logoUrl }: HeaderProps) {
   return (
     <Section style={{ textAlign: 'center', marginBottom: '32px' }}>
       {logoUrl && (

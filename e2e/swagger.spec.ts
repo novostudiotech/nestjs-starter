@@ -16,7 +16,7 @@ test.describe('Swagger Documentation', () => {
     expect(status).toBe(200);
     expect(data).toBeDefined();
     expect(data.info).toBeDefined();
-    expect(data.info.title).toBe('NestJS Foundation API');
+    expect(data.info.title).toBe('NestJS Starter Boilerplate API');
     expect(data.paths).toBeDefined();
   });
 });

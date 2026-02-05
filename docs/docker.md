@@ -1,6 +1,6 @@
 # Docker Setup
 
-This guide covers Docker and Docker Compose setup for NestJS Foundation.
+This guide covers Docker and Docker Compose setup for NestJS Starter Boilerplate.
 
 ## Docker Compose (Recommended)
 
