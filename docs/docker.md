@@ -44,7 +44,7 @@ docker compose down -v
 ### Build Production Image
 
 ```bash
-docker build -t nestjs-foundation:latest .
+docker build -t nestjs-starter:latest .
 ```
 
 ### Run Container
@@ -53,7 +53,7 @@ docker build -t nestjs-foundation:latest .
 docker run -p 3000:3000 \
   -e DATABASE_URL=postgresql://user:pass@host:5432/db \
   -e AUTH_SECRET=your-secret \
-  nestjs-foundation:latest
+  nestjs-starter:latest
 ```
 
 ### Multi-stage Build
@@ -123,7 +123,7 @@ healthcheck:
 ```yaml
 services:
   app:
-    image: nestjs-foundation:latest
+    image: nestjs-starter:latest
     restart: unless-stopped
     ports:
       - "3000:3000"

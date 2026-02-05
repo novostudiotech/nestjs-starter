@@ -267,9 +267,9 @@ usage() {
   echo "  --verbose              Verbose output"
   echo ""
   echo "Examples:"
-  echo "  ./sync.sh from ../nestjs-foundation           # pull from template"
-  echo "  ./sync.sh to ../nestjs-foundation             # push to template"
-  echo "  ./sync.sh from ../nestjs-foundation --dry-run # preview"
+  echo "  ./sync.sh from ../nestjs-starter           # pull from template"
+  echo "  ./sync.sh to ../nestjs-starter             # push to template"
+  echo "  ./sync.sh from ../nestjs-starter --dry-run # preview"
   exit 1
 }
 

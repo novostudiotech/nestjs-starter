@@ -4,7 +4,7 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:16-alpine
-    container_name: nestjs-foundation-postgres
+    container_name: nestjs-starter-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
@@ -25,7 +25,7 @@ services:
   # PostgreSQL Test Database
   postgres-test:
     image: postgres:16-alpine
-    container_name: nestjs-foundation-postgres-test
+    container_name: nestjs-starter-postgres-test
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
@@ -50,7 +50,7 @@ services:
       dockerfile: Dockerfile
       args:
         nodeVersion: 24
-    container_name: nestjs-foundation-app
+    container_name: nestjs-starter-app
     restart: unless-stopped
     ports:
       - '3000:3000'
@@ -81,7 +81,7 @@ services:
   #     context: .
   #     dockerfile: Dockerfile
   #     target: builder
-  #   container_name: nestjs-foundation-app-dev
+  #   container_name: nestjs-starter-app-dev
   #   restart: unless-stopped
   #   ports:
   #     - '3000:3000'

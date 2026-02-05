@@ -65,7 +65,7 @@ This boilerplate includes a `Products` module (`src/products/`) as a **demonstra
 <!-- remove_after_init_start -->
 ```bash
 # Clone the repository
-git clone git@github.com:novostudiotech/nestjs-foundation.git my-project
+git clone git@github.com:novostudiotech/nestjs-starter.git my-project
 cd my-project
 
 # Run initialization wizard

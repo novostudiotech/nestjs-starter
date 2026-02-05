@@ -176,7 +176,7 @@ jobs:
     name: Docker Build and Security Scan
     uses: ./.github/workflows/_docker-build.yml
     with:
-      image: ghcr.io/${{ github.repository_owner }}/nestjs-foundation
+      image: ghcr.io/${{ github.repository_owner }}/nestjs-starter
       target: api
       push: false
       scan: true

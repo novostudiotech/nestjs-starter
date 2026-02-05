@@ -323,7 +323,7 @@ async function promptUser(): Promise<ProjectConfig> {
 function buildReplacementMap(config: ProjectConfig): ReplacementMap {
   return {
     exact: [
-      { from: 'nestjs-foundation', to: config.projectSlug },
+      { from: 'nestjs-starter', to: config.projectSlug },
       { from: 'nestjs_foundation', to: config.projectSnake },
       { from: 'NestJS Foundation', to: config.projectName },
       { from: 'Production-ready NestJS boilerplate', to: config.projectDescription },
@@ -331,7 +331,7 @@ function buildReplacementMap(config: ProjectConfig): ReplacementMap {
     ],
     patterns: [
       {
-        regex: /nestjs-foundation-(postgres|app|postgres-test|app-dev)/g,
+        regex: /nestjs-starter-(postgres|app|postgres-test|app-dev)/g,
         replace: (_match: string, suffix: string) => `${config.projectSlug}-${suffix}`,
       },
       {
@@ -537,7 +537,7 @@ function setupGit(config: ProjectConfig, rootDir: string): void {
     // Initial commit
     log.step('Creating initial commit...');
     execSync('git add .', { cwd: rootDir, stdio: 'ignore' });
-    execSync('git commit -m "chore: initialize project from nestjs-foundation"', {
+    execSync('git commit -m "chore: initialize project from nestjs-starter"', {
       cwd: rootDir,
       stdio: 'ignore',
     });
