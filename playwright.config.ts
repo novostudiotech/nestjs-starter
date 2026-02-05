@@ -38,7 +38,7 @@ export default defineConfig({
     stderr: 'pipe',
     url: `${baseURL}/health`,
     reuseExistingServer: !process.env.CI,
-    timeout: 10000,
+    timeout: 60000,
     env: {
       // Proxying all environment variables from .env.test
       ...process.env,

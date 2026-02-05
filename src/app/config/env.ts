@@ -20,12 +20,12 @@ const envSchema = z.object({
    * - local: Developer's local machine
    * - test: Automated testing environment (E2E, integration tests)
    * - dev: Development server (shared team environment)
-   * - stage: Staging/QA environment (production-like testing)
+   * - staging: Staging/QA environment (production-like testing)
    * - prod: Production environment (live users)
    *
    * Use for: Business logic (feature flags, API endpoints, log levels, retries)
    */
-  APP_ENV: z.enum(['local', 'test', 'dev', 'stage', 'prod']).default('local'),
+  APP_ENV: z.enum(['local', 'test', 'dev', 'staging', 'prod']).default('local'),
 
   PORT: z.coerce.number().int().positive().optional(),
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).optional(),
