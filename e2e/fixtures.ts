@@ -13,11 +13,6 @@ export interface TestUser {
   password: string;
 }
 
-export interface TestOrganizer {
-  id: string;
-  name: string;
-}
-
 /**
  * Test-scoped fixtures (created per test)
  */
@@ -77,30 +72,6 @@ export interface TestFixtures {
   useAuthenticatedApi: (userData?: Partial<TestUser>) => Promise<{
     api: ApiClient;
     user: TestUser;
-  }>;
-
-  /**
-   * Organizer hook - creates authenticated user with organizer
-   *
-   * @example
-   * ```typescript
-   * test('event test', async ({ useOrganizer }) => {
-   *   const { api, organizer } = await useOrganizer();
-   *   const event = await api.organizerEventsControllerCreate(organizer.id, {
-   *     name: 'My Event',
-   *     category: 'party',
-   *     location: '123 Test Street, Lisbon',
-   *   });
-   * });
-   * ```
-   */
-  useOrganizer: (options?: {
-    user?: Partial<TestUser>;
-    organizer?: Partial<TestOrganizer>;
-  }) => Promise<{
-    api: ApiClient;
-    user: TestUser;
-    organizer: TestOrganizer;
   }>;
 }
 
@@ -175,38 +146,6 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
       });
 
       return { api, user };
-    };
-
-    await use(hook);
-  },
-
-  useOrganizer: async ({ useAuthenticatedApi }, use) => {
-    const hook = async (options?: {
-      user?: Partial<TestUser>;
-      organizer?: Partial<TestOrganizer>;
-    }): Promise<{
-      api: ApiClient;
-      user: TestUser;
-      organizer: TestOrganizer;
-    }> => {
-      const { api, user } = await useAuthenticatedApi(options?.user);
-      const timestamp = Date.now();
-
-      const orgResponse = await api.organizersControllerCreate({
-        name: options?.organizer?.name || `Test Org ${timestamp}`,
-        type: 'individual',
-        email: 'org@example.com',
-        phone: '+1234567890',
-      });
-
-      return {
-        api,
-        user,
-        organizer: {
-          id: orgResponse.data.id,
-          name: orgResponse.data.name,
-        },
-      };
     };
 
     await use(hook);
