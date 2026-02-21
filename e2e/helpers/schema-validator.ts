@@ -98,7 +98,7 @@ export function findExtraProperties(
   }
 
   // Handle objects
-  if (typeof data === 'object' && data !== null) {
+  if (typeof data === 'object' && data !== null && data.constructor === Object) {
     if (schema.additionalProperties === true || typeof schema.additionalProperties === 'object') {
       return [];
     }
