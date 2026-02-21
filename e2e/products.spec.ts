@@ -54,7 +54,6 @@ test.describe('Products Module', () => {
       } as any);
 
       expect(response.status).toBe(400);
-      // biome-ignore lint/suspicious/noExplicitAny: Error response type varies
       const data = response.data as any;
       expect(data.status).toBe(400);
       expect(data.message).toBe('Validation failed');
@@ -75,7 +74,6 @@ test.describe('Products Module', () => {
       } as any);
 
       expect(response.status).toBe(400);
-      // biome-ignore lint/suspicious/noExplicitAny: Error response type varies
       const data = response.data as any;
       const nameError = data.validation.find((err: { field: string }) =>
         err.field.includes('name')
@@ -93,7 +91,6 @@ test.describe('Products Module', () => {
       } as any);
 
       expect(response.status).toBe(400);
-      // biome-ignore lint/suspicious/noExplicitAny: Error response type varies
       const data = response.data as any;
       const priceError = data.validation.find((err: { field: string }) =>
         err.field.includes('price')
@@ -113,7 +110,6 @@ test.describe('Products Module', () => {
       } as any);
 
       expect(response.status).toBe(400);
-      // biome-ignore lint/suspicious/noExplicitAny: Error response type varies
       const data = response.data as any;
       const categoryError = data.validation.find((err: { field: string }) =>
         err.field.includes('category')
@@ -132,7 +128,6 @@ test.describe('Products Module', () => {
       } as any);
 
       expect(response.status).toBe(400);
-      // biome-ignore lint/suspicious/noExplicitAny: Error response type varies
       const data = response.data as any;
       const imageUrlError = data.validation.find((err: { field: string }) =>
         err.field.includes('imageUrl')
@@ -151,7 +146,6 @@ test.describe('Products Module', () => {
       } as any);
 
       expect(response.status).toBe(400);
-      // biome-ignore lint/suspicious/noExplicitAny: Error response type varies
       const data = response.data as any;
       const tagsError = data.validation.find((err: { field: string }) =>
         err.field.includes('tags')
@@ -178,7 +172,6 @@ test.describe('Products Module', () => {
       } as any);
 
       expect(response.status).toBe(400);
-      // biome-ignore lint/suspicious/noExplicitAny: Error response type varies
       const data = response.data as any;
       const dimensionsError = data.validation.find((err: { field: string }) =>
         err.field.includes('dimensions')
@@ -195,7 +188,6 @@ test.describe('Products Module', () => {
       });
 
       expect(response.status).toBe(400);
-      // biome-ignore lint/suspicious/noExplicitAny: Error response type varies
       const data = response.data as any;
       expect(data.status).toBe(400);
     });
@@ -370,7 +362,6 @@ test.describe('Products Module', () => {
       } as any);
 
       expect(response.status).toBe(400);
-      // biome-ignore lint/suspicious/noExplicitAny: Error response type varies
       const data = response.data as any;
       expect(data.status).toBe(400);
     });
