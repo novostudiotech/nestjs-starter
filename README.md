@@ -68,8 +68,9 @@ This boilerplate includes a `Products` module (`src/products/`) as a **demonstra
 git clone git@github.com:novostudiotech/nestjs-starter.git my-project
 cd my-project
 
-# Run initialization wizard
-pnpm init-project
+
+pnpm install
+pnpm init-project # Run initialization wizard
 ```
 
 The wizard will:

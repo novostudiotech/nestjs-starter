@@ -36,8 +36,8 @@ Edit `.env` and set required variables:
 NODE_ENV=development
 APP_ENV=local
 PORT=3000
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/nestjs_foundation?sslmode=disable
-TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/nestjs_foundation_test?sslmode=disable
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/nestjs_starter?sslmode=disable
+TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/nestjs_starter_test?sslmode=disable
 AUTH_SECRET=<paste-generated-secret-here>
 APP_NAME="NestJS Starter Boilerplate"
 ```
@@ -54,8 +54,8 @@ APP_NAME="NestJS Starter Boilerplate"
 
 ```bash
 # Create databases
-createdb nestjs_foundation
-createdb nestjs_foundation_test
+createdb nestjs_starter
+createdb nestjs_starter_test
 
 # Run migrations
 pnpm migration:run
@@ -146,8 +146,8 @@ psql -h localhost -p 5432 -U postgres
 ### Database Does Not Exist
 
 ```bash
-createdb nestjs_foundation
-createdb nestjs_foundation_test
+createdb nestjs_starter
+createdb nestjs_starter_test
 ```
 
 ## Documentation

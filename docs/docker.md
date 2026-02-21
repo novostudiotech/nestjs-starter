@@ -68,13 +68,13 @@ The Dockerfile uses multi-stage builds for optimal image size:
 
 #### PostgreSQL (Main Database)
 - Port: 5432
-- Database: `nestjs_foundation`
+- Database: `nestjs_starter`
 - User: `postgres`
 - Password: `postgres`
 
 #### PostgreSQL (Test Database)
 - Port: 5433
-- Database: `nestjs_foundation_test`
+- Database: `nestjs_starter_test`
 - User: `postgres`
 - Password: `postgres`
 
@@ -90,7 +90,7 @@ Override environment variables in `docker-compose.yml` or create a `.env.docker`
 ```bash
 NODE_ENV=production
 PORT=3000
-DATABASE_URL=postgresql://postgres:postgres@postgres:5432/nestjs_foundation
+DATABASE_URL=postgresql://postgres:postgres@postgres:5432/nestjs_starter
 AUTH_SECRET=your-secret-key
 ```
 

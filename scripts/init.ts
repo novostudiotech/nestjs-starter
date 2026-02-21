@@ -324,7 +324,7 @@ function buildReplacementMap(config: ProjectConfig): ReplacementMap {
   return {
     exact: [
       { from: 'nestjs-starter', to: config.projectSlug },
-      { from: 'nestjs_foundation', to: config.projectSnake },
+      { from: 'nestjs_starter', to: config.projectSnake },
       { from: 'NestJS Starter Boilerplate', to: config.projectName },
       { from: 'Production-ready NestJS boilerplate', to: config.projectDescription },
       { from: 'Novo Studio', to: config.authorName },
@@ -335,7 +335,7 @@ function buildReplacementMap(config: ProjectConfig): ReplacementMap {
         replace: (_match: string, suffix: string) => `${config.projectSlug}-${suffix}`,
       },
       {
-        regex: /nestjs_foundation_(test)/g,
+        regex: /nestjs_starter_(test)/g,
         replace: (_match: string, suffix: string) => `${config.projectSnake}_${suffix}`,
       },
     ],
@@ -463,11 +463,11 @@ function buildEnvReplacementMap(config: ProjectConfig): ReplacementMap {
   return {
     exact: [
       {
-        from: 'DATABASE_URL=postgresql://postgres:postgres@localhost:5432/nestjs_foundation?sslmode=disable',
+        from: 'DATABASE_URL=postgresql://postgres:postgres@localhost:5432/nestjs_starter?sslmode=disable',
         to: `DATABASE_URL=${config.databaseUrl}`,
       },
       {
-        from: 'TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5433/nestjs_foundation_test?sslmode=disable',
+        from: 'TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5433/nestjs_starter_test?sslmode=disable',
         to: `TEST_DATABASE_URL=${config.testDatabaseUrl}`,
       },
       {
