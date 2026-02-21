@@ -19,6 +19,10 @@ async function bootstrap() {
     bodyParser: false, // Required for Better Auth, the library will automatically re-add the default body parsers.
   });
 
+  // Express 5 defaults to simple query parser which doesn't handle arrays.
+  // Use 'extended' (qs library) so ?danceStyles[]=bachata parses as arrays.
+  app.getHttpAdapter().getInstance().set('query parser', 'extended');
+
   const logger = app.get(Logger);
   app.useLogger(logger);
 
@@ -68,7 +72,7 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   // Setup CORS with wildcard support (Better Auth-style)
-  const corsOriginsEnv = configService.get<string>('CORS_ORIGINS');
+  const corsOriginsEnv = configService.get('CORS_ORIGINS');
   const corsOptions = getCorsOptions(corsOriginsEnv);
   app.enableCors(corsOptions);
 
@@ -77,8 +81,8 @@ async function bootstrap() {
 
   // Setup Swagger
   const config = new DocumentBuilder()
-    .setTitle('NestJS Starter Boilerplate API')
-    .setDescription('NestJS Starter Boilerplate API Documentation')
+    .setTitle('NestJS Foundation API')
+    .setDescription('NestJS Foundation API Documentation')
     .setVersion('1.0')
     .build();
 

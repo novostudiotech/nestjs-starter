@@ -4,11 +4,7 @@ import { AllowAnonymous } from '@thallesp/nestjs-better-auth';
 import { AppService } from '#/app.service';
 
 /**
- * AppController - Minimal example controller
- *
- * For comprehensive examples of validation, body parser, CRUD operations, etc.,
- * see the [Products module](src/products/).
- *
+ * AppController - Root application controller
  */
 @ApiTags('App')
 @Controller()

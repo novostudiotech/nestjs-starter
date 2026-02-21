@@ -10,6 +10,11 @@ src/admin/
 src/auth/
 src/notifications/
 src/media/
+src/data-source.ts
+src/main.ts
+src/app.module.ts
+src/app.service.ts
+src/app.controller.ts
 
 
 # === E2E tests ===
@@ -35,6 +40,7 @@ e2e/database.spec.ts
 
 # === Configs and settings ===
 .syncfiles
+env.js
 playwright.config.ts
 biome.json
 jest.config.ts
