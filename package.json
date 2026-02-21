@@ -94,7 +94,7 @@
     "orval": "^8.2.0",
     "patch-package": "^8.0.1",
     "pino-pretty": "^13.1.3",
-    "react-email": "^5.2.6",
+    "react-email": "^5.2.8",
     "source-map-support": "^0.5.21",
     "tough-cookie": "^6.0.0",
     "ts-jest": "^29.4.6",
