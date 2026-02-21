@@ -1,5 +1,6 @@
+import bcrypt from 'bcryptjs';
 import { betterAuth } from 'better-auth';
-import { bearer, emailOTP, jwt, openAPI } from 'better-auth/plugins';
+import { admin, bearer, emailOTP, jwt, openAPI } from 'better-auth/plugins';
 import { Pool } from 'pg';
 import { uuidv7 } from 'uuidv7';
 
@@ -78,6 +79,14 @@ export function getBetterAuthConfig({
     emailAndPassword: {
       enabled: true,
       requireEmailVerification: !isTest, // Disable email verification in test environment
+      // Use bcrypt for password hashing to match AdminInitService implementation
+      // AdminInitService creates the first admin user directly in the database using bcrypt.hash()
+      // Better Auth uses scrypt by default, so we override it here for consistency
+      password: {
+        hash: async (password: string) => bcrypt.hash(password, 10),
+        verify: async ({ password, hash }: { password: string; hash: string }) =>
+          bcrypt.compare(password, hash),
+      },
     },
     plugins: [
       openAPI({ disableDefaultReference: true }),
@@ -103,6 +112,7 @@ export function getBetterAuthConfig({
       }),
       bearer(),
       jwt(),
+      admin(),
     ],
     user: {
       modelName: 'user',

@@ -50,4 +50,11 @@ export class SessionEntity extends AuditableEntity {
    */
   @Column({ type: 'varchar', nullable: true, length: 500 })
   userAgent: string | null;
+
+  /**
+   * ID of the admin user impersonating this session
+   * Used by Better Auth admin plugin for admin impersonation feature
+   */
+  @Column({ type: 'text', nullable: true })
+  impersonatedBy: string | null;
 }

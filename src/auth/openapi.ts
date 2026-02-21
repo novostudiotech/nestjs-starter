@@ -274,6 +274,37 @@ function ensureResponses(
 }
 
 /**
+ * Deduplicates operationIds by prefixing with "admin" when a collision is detected.
+ * Better Auth reuses operationIds across base and admin plugin routes
+ * (e.g., "updateUser" at /update-user and /admin/update-user).
+ */
+function deduplicateOperationIds(pathItem: Path, path: string, seenIds: Set<string>): Path {
+  const isAdmin = path.includes('/admin/');
+  const result: Path = {};
+
+  for (const method of ['get', 'post'] as const) {
+    const operation = pathItem[method];
+    if (!operation) continue;
+
+    const opAny = operation as Record<string, unknown>;
+    const operationId = opAny.operationId as string | undefined;
+
+    if (operationId && seenIds.has(operationId)) {
+      const newId = isAdmin
+        ? `admin${operationId.charAt(0).toUpperCase()}${operationId.slice(1)}`
+        : `${operationId}Self`;
+      result[method] = { ...operation, operationId: newId } as typeof operation;
+      seenIds.add(newId);
+    } else {
+      if (operationId) seenIds.add(operationId);
+      result[method] = operation;
+    }
+  }
+
+  return result;
+}
+
+/**
  * Adds Auth tag and ensures responses exist for all operations in a path item
  */
 function addAuthTag(pathItem: Path, { force = false }: { force?: boolean } = {}): Path {
@@ -450,12 +481,17 @@ export async function generateBetterAuthOpenAPISchema(
 
     const basePath = getBasePath(authInstance);
 
-    // Apply basePath prefix to all paths, add Auth tags, and ensure responses exist
+    // Apply basePath prefix to all paths, add Auth tags, and ensure responses exist.
+    // Deduplicate operationIds: Better Auth reuses operationIds across base and admin
+    // routes (e.g., "updateUser" for both /update-user and /admin/update-user),
+    // which causes orval to generate duplicate type declarations.
     const authPaths: Record<string, Path> = {};
+    const seenOperationIds = new Set<string>();
     for (const [path, pathItem] of Object.entries(betterAuthSchema.paths)) {
       if (pathItem) {
         const prefixedPath = prefixPath(path, basePath);
-        authPaths[prefixedPath] = addAuthTag(pathItem, { force: true });
+        const deduped = deduplicateOperationIds(pathItem, path, seenOperationIds);
+        authPaths[prefixedPath] = addAuthTag(deduped, { force: true });
       }
     }
 

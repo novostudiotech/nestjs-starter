@@ -1,6 +1,7 @@
 import { Controller, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '@thallesp/nestjs-better-auth';
+import { AuthGuard, Roles } from '@thallesp/nestjs-better-auth';
+import { UserRole } from '#/auth/dto/enums';
 import { adminRegistry } from './admin-registry';
 
 export interface AdminControllerOptions {
@@ -86,6 +87,9 @@ export function AdminController(
     if (guards.length > 0) {
       UseGuards(...guards)(target);
     }
+
+    // Apply Roles decorator for admin role requirement
+    Roles([UserRole.ADMIN])(target);
 
     // Store metadata for possible extensions
     Reflect.defineMetadata('admin:entity', entity, target);

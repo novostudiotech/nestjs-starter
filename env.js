@@ -8,15 +8,17 @@
  *
  * Sets defaults (if not set explicitly):
  * - NODE_ENV: 'development' (how code runs: development/production)
- * - APP_ENV: 'local' (where code is deployed: local/test/dev/stage/prod)
+ * - APP_ENV: 'local' (where code is deployed: local/test/dev/staging/prod)
  *
- * Priority (first found wins):
- * 1. .env.{APP_ENV} (e.g., .env.test, .env.prod)
- * 2. .env (fallback)
+ * Loading (cascading, first value wins via dotenv):
+ * 1. .env.{APP_ENV}.local (local overrides, git-ignored)
+ * 2. .env.{APP_ENV} (e.g., .env.test, .env.prod)
+ * 3. .env (base fallback)
  *
  * Example usage:
- *   APP_ENV=prod pnpm start:prod  # Loads .env.prod
- *   APP_ENV=test pnpm test:e2e    # Loads .env.test
+ *   APP_ENV=prod pnpm start:prod  # .env.prod.local → .env.prod → .env
+ *   APP_ENV=test pnpm test:e2e    # .env.test.local → .env.test → .env
+ *   pnpm dev                      # .env.local → .env
  */
 
 const { config } = require('dotenv');
@@ -29,7 +31,7 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 process.env.APP_ENV = process.env.APP_ENV || 'local';
 
 const appEnv = process.env.APP_ENV;
-const envFiles = [`.env.${appEnv}`, '.env'];
+const envFiles = [`.env.${appEnv}.local`, `.env.${appEnv}`, '.env'];
 
 // Check if .env file contains forbidden variables
 function hasForbiddenVars(filePath) {
@@ -41,7 +43,7 @@ function hasForbiddenVars(filePath) {
   }
 }
 
-// Load first existing file
+// Load all existing files in priority order (first value wins, dotenv doesn't override)
 let loaded = false;
 for (const file of envFiles) {
   const path = resolve(process.cwd(), file);
@@ -57,7 +59,6 @@ for (const file of envFiles) {
     console.log(`[dotenv] Loading environment from: ${file}`);
     config({ path });
     loaded = true;
-    break;
   }
 }
 

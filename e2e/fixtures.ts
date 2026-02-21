@@ -16,7 +16,7 @@ export interface TestUser {
 /**
  * Test-scoped fixtures (created per test)
  */
-interface TestFixtures {
+export interface TestFixtures {
   /**
    * HTTP client hook - provides direct axios instance access
    *
