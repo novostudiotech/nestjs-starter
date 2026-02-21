@@ -1,8 +1,21 @@
 import { expect, test } from './fixtures';
 
+/**
+ * Helper: authenticate a user and promote them to admin role in the database
+ */
+async function useAdminApi(
+  useAuthenticatedApi: (userData?: any) => Promise<{ api: any; user: any }>,
+  useDb: () => any
+) {
+  const { api, user } = await useAuthenticatedApi();
+  const db = useDb();
+  await db.userRepo.update({ email: user.email }, { role: 'admin' });
+  return { api, user };
+}
+
 test.describe('Admin User CRUD', () => {
   test('should list users with pagination', async ({ useAuthenticatedApi, useDb }) => {
-    const { api } = await useAuthenticatedApi();
+    const { api } = await useAdminApi(useAuthenticatedApi, useDb);
     const db = useDb();
 
     // Create additional test users
@@ -25,7 +38,7 @@ test.describe('Admin User CRUD', () => {
   });
 
   test('should get user by id', async ({ useAuthenticatedApi, useDb }) => {
-    const { api, user: testUser } = await useAuthenticatedApi();
+    const { api, user: testUser } = await useAdminApi(useAuthenticatedApi, useDb);
     const db = useDb();
 
     // Get the user from database
@@ -44,8 +57,8 @@ test.describe('Admin User CRUD', () => {
     expect(response.data.name).toBe(testUser.name);
   });
 
-  test('should return 404 for non-existent user', async ({ useAuthenticatedApi }) => {
-    const { api } = await useAuthenticatedApi();
+  test('should return 404 for non-existent user', async ({ useAuthenticatedApi, useDb }) => {
+    const { api } = await useAdminApi(useAuthenticatedApi, useDb);
 
     const nonExistentId = '01234567-89ab-7def-0123-456789abcdef';
     const response = await api.adminUsersControllerFindOne(nonExistentId);
@@ -54,7 +67,7 @@ test.describe('Admin User CRUD', () => {
   });
 
   test('should create a new user', async ({ useAuthenticatedApi, useDb }) => {
-    const { api } = await useAuthenticatedApi();
+    const { api } = await useAdminApi(useAuthenticatedApi, useDb);
     const db = useDb();
 
     const newUserData = {
@@ -81,7 +94,7 @@ test.describe('Admin User CRUD', () => {
   });
 
   test('should update an existing user', async ({ useAuthenticatedApi, useDb }) => {
-    const { api } = await useAuthenticatedApi();
+    const { api } = await useAdminApi(useAuthenticatedApi, useDb);
     const db = useDb();
 
     // Create a user to update
@@ -121,7 +134,7 @@ test.describe('Admin User CRUD', () => {
     useAuthenticatedApi,
     useDb,
   }) => {
-    const { api } = await useAuthenticatedApi();
+    const { api } = await useAdminApi(useAuthenticatedApi, useDb);
     const db = useDb();
 
     // Create a user to update partially
@@ -151,7 +164,7 @@ test.describe('Admin User CRUD', () => {
   });
 
   test('should delete a user (soft delete)', async ({ useAuthenticatedApi, useDb }) => {
-    const { api } = await useAuthenticatedApi();
+    const { api } = await useAdminApi(useAuthenticatedApi, useDb);
     const db = useDb();
 
     // Create a user to delete
@@ -185,7 +198,7 @@ test.describe('Admin User CRUD', () => {
   });
 
   test('should filter users by filter parameter', async ({ useAuthenticatedApi, useDb }) => {
-    const { api } = await useAuthenticatedApi();
+    const { api } = await useAdminApi(useAuthenticatedApi, useDb);
     const db = useDb();
 
     // Create users with distinct emailVerified status
@@ -225,7 +238,7 @@ test.describe('Admin User CRUD', () => {
   });
 
   test('should handle pagination correctly', async ({ useAuthenticatedApi, useDb }) => {
-    const { api } = await useAuthenticatedApi();
+    const { api } = await useAdminApi(useAuthenticatedApi, useDb);
     const db = useDb();
 
     // Create 5 test users
@@ -273,8 +286,8 @@ test.describe('Admin User CRUD', () => {
     expect(response.status).toBe(401);
   });
 
-  test('should handle invalid user data gracefully', async ({ useAuthenticatedApi }) => {
-    const { api } = await useAuthenticatedApi();
+  test('should handle invalid user data gracefully', async ({ useAuthenticatedApi, useDb }) => {
+    const { api } = await useAdminApi(useAuthenticatedApi, useDb);
 
     // Try to create user with invalid email
     const invalidUserData = {
