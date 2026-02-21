@@ -82,11 +82,14 @@
       }
     },
     {
-      "includes": ["e2e/api/generated.ts"],
+      "includes": ["e2e/api/generated.ts", "e2e/api/model/**"],
       "linter": {
         "rules": {
           "nursery": {
             "noExcessiveLinesPerFile": "off"
+          },
+          "suspicious": {
+            "noRedeclare": "off"
           }
         }
       }

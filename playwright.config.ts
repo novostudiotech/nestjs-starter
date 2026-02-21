@@ -1,7 +1,12 @@
+import { existsSync } from 'node:fs';
 import { defineConfig } from '@playwright/test';
 import { config } from 'dotenv';
 
-// Load test environment variables from .env.test
+// Load test environment variables from .env.test and .env.test.local
+// .env.test.local has priority (for local secrets, not committed to git)
+if (existsSync('.env.test.local')) {
+  config({ path: '.env.test.local' });
+}
 config({ path: '.env.test' });
 
 const PORT = process.env.PORT || '13000';
@@ -37,7 +42,10 @@ export default defineConfig({
     stdout: 'pipe',
     stderr: 'pipe',
     url: `${baseURL}/health`,
-    reuseExistingServer: !process.env.CI,
+    // Always start a fresh server to ensure correct APP_ENV=test configuration.
+    // Reusing an existing server (e.g. a dev server with APP_ENV=local) causes
+    // auth failures because requireEmailVerification would be enabled.
+    reuseExistingServer: false,
     timeout: 60000,
     env: {
       // Proxying all environment variables from .env.test
