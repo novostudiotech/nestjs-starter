@@ -141,3 +141,84 @@ test.describe('Better Auth', () => {
     expect(account.password).not.toBe(user.password); // Should NOT be plain text
   });
 });
+
+test.describe('Admin Initialization', () => {
+  test('should allow admin user to sign in with credentials from environment', async ({
+    useApi,
+    useDb,
+  }) => {
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const adminPassword = process.env.ADMIN_PASSWORD;
+
+    // Skip test if admin credentials are not configured
+    if (!adminEmail || !adminPassword) {
+      test.skip();
+      return;
+    }
+
+    const db = useDb();
+
+    // Verify admin user exists in database
+    const adminUser = await db.userRepo.findOne({
+      where: { email: adminEmail },
+    });
+
+    expect(adminUser).toBeDefined();
+    expect(adminUser?.email).toBe(adminEmail);
+    expect(adminUser?.name).toBe('Admin');
+    expect(adminUser?.emailVerified).toBe(true); // Admin should have verified email
+    expect(adminUser?.role).toBe('admin'); // Admin should have admin role
+
+    if (!adminUser) return; // Type guard
+
+    // Verify admin account exists
+    const adminAccount = await db.accountRepo.findOne({
+      where: {
+        userId: adminUser.id,
+        providerId: 'credential',
+      },
+    });
+
+    expect(adminAccount).toBeDefined();
+    expect(adminAccount?.password).toBeDefined(); // Should have hashed password
+    expect(adminAccount?.password).not.toBe(adminPassword); // Should be hashed, not plain text
+
+    // Sign in with admin credentials
+    const api = await useApi();
+    const signInResponse = await api.signInEmail({
+      email: adminEmail,
+      password: adminPassword,
+    });
+
+    expect(signInResponse.status).toBe(200);
+    expect(signInResponse.data).toBeDefined();
+
+    // Verify session was created and user is admin
+    const sessionResponse = await api.getSession();
+    expect(sessionResponse.status).toBe(200);
+    expect(sessionResponse.data?.user).toBeDefined();
+    expect(sessionResponse.data?.user?.email).toBe(adminEmail);
+    expect(sessionResponse.data?.user?.role).toBe('admin');
+    expect(sessionResponse.data?.user?.emailVerified).toBe(true);
+  });
+
+  test('should fail to sign in with wrong admin password', async ({ useApi }) => {
+    const adminEmail = process.env.ADMIN_EMAIL;
+
+    // Skip test if admin credentials are not configured
+    if (!adminEmail) {
+      test.skip();
+      return;
+    }
+
+    const api = await useApi();
+
+    // Try to sign in with wrong password
+    const signInResponse = await api.signInEmail({
+      email: adminEmail,
+      password: 'WrongPassword123!',
+    });
+
+    expect(signInResponse.status).toBe(401);
+  });
+});

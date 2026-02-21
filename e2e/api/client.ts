@@ -37,14 +37,13 @@ export type ApiClient = GeneratedApiFunctions;
  */
 export const createApiClient = (config?: AxiosRequestConfig): ApiClient => {
   const axiosInstance: AxiosInstance = createAxiosInstance(config);
-
-  return new Proxy(generatedApi as any, {
+  return new Proxy(generatedApi, {
     get(target, prop: string | symbol) {
       const value = target[prop];
 
       // Only wrap functions
       if (typeof value === 'function') {
-        return (...args: any[]) => {
+        return (...args: Parameters<typeof value>) => {
           // Generated functions have signature: (body?, params?, options?)
           // The last parameter is always options (SecondParameter<typeof apiClient>)
           // We need to inject axiosInstance into the options parameter

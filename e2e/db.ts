@@ -10,7 +10,6 @@ export interface DatabaseFixture {
   sessionRepo: Repository<any>;
   accountRepo: Repository<any>;
   verificationRepo: Repository<any>;
-
   dataSource: DataSource;
 }
 
@@ -55,7 +54,6 @@ export async function createDatabaseFixture(): Promise<DatabaseFixture> {
     sessionRepo: dataSource.getRepository('session'),
     accountRepo: dataSource.getRepository('account'),
     verificationRepo: dataSource.getRepository('verification'),
-
     dataSource,
   };
 }

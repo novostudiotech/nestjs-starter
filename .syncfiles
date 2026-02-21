@@ -2,12 +2,33 @@
 # Lines starting with # are comments, empty lines are ignored
 # Lines starting with ! are exclusions (won't be synced)
 
+.github/workflows/_docker-build.yml
+
 # === Application core code ===
 src/app/
 src/admin/
 src/auth/
 src/notifications/
 src/media/
+
+
+# === E2E tests ===
+e2e/api/client.ts
+e2e/api/factory.ts
+e2e/api/index.ts
+e2e/api/mutator.ts
+e2e/helpers/
+e2e/db.ts
+e2e/fixtures.ts
+e2e/health.spec.ts
+e2e/auth.spec.ts
+e2e/media.spec.ts
+e2e/notifications.spec.ts
+e2e/swagger-contract.spec.ts
+e2e/swagger.spec.ts
+e2e/jwt-verification.spec.ts
+e2e/database.spec.ts
+
 
 # === Exclusions (project-specific files to skip) ===
 !src/app/db/migrations
