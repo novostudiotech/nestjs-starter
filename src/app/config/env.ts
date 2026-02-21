@@ -70,6 +70,12 @@ const envSchema = z.object({
   S3_SECRET_KEY: z.string().optional(),
   S3_CDN_URL: z.string().url().optional(),
   S3_PREFIX: z.string().optional(), // Defaults to APP_ENV if not set
+
+  // Admin initialization (optional)
+  // If both are set, first admin user will be created on app startup
+  // Only used once - after initial creation, change password via auth flow
+  ADMIN_EMAIL: z.string().email().optional(),
+  ADMIN_PASSWORD: z.string().min(8).optional(),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;
