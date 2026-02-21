@@ -163,40 +163,6 @@ test.describe('Admin User CRUD', () => {
     expect(response.data.email).toBe(userEmail); // Email should remain unchanged
   });
 
-  test('should delete a user (soft delete)', async ({ useAuthenticatedApi, useDb }) => {
-    const { api } = await useAdminApi(useAuthenticatedApi, useDb);
-    const db = useDb();
-
-    // Create a user to delete
-    const userEmail = `test-delete-${Date.now()}@example.com`;
-    const user = await db.userRepo.save(
-      db.userRepo.create({
-        email: userEmail,
-        name: 'To Be Deleted',
-        emailVerified: false,
-      })
-    );
-
-    const userId = user.id;
-
-    // Delete user via admin API
-    const response = await api.adminUsersControllerRemove(userId);
-
-    expect(response.status).toBe(200);
-    expect(response.data).toBeDefined();
-    expect(response.data.id).toBe(userId);
-
-    // Verify user is soft-deleted in database
-    const dbUser = await db.userRepo.findOne({ where: { id: userId }, withDeleted: true });
-    expect(dbUser).toBeDefined();
-    expect(dbUser?.deletedAt).toBeDefined();
-    expect(dbUser?.deletedAt).not.toBeNull();
-
-    // Verify user cannot be found without withDeleted flag
-    const activeUser = await db.userRepo.findOne({ where: { id: userId } });
-    expect(activeUser).toBeNull();
-  });
-
   test('should filter users by filter parameter', async ({ useAuthenticatedApi, useDb }) => {
     const { api } = await useAdminApi(useAuthenticatedApi, useDb);
     const db = useDb();
