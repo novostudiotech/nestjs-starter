@@ -1,0 +1,71 @@
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  id-token: write
+
+jobs:
+  review:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Claude Code Review
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          track_progress: true
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+            AUTHOR: ${{ github.event.pull_request.user.login }}
+
+            You are reviewing a pull request for a NestJS TypeScript backend.
+            Read CLAUDE.md for project-specific context and coding standards.
+
+            ## Review Focus
+
+            1. **Code Quality**
+               - TypeScript strict mode compliance (no `any` without justification)
+               - Proper use of Zod for validation (NOT class-validator)
+               - Correct import paths (`#/` for internal modules)
+               - NestJS patterns (Controllers → Services → Repositories)
+
+            2. **Testing**
+               - E2E tests required for new API endpoints
+               - Unit tests recommended for complex business logic
+               - Check test coverage for new code
+
+            3. **Security**
+               - No hardcoded secrets or credentials
+               - Proper input validation
+               - SQL injection prevention
+               - Secure authentication patterns
+
+            4. **Best Practices**
+               - Swagger decorators on controllers
+               - Error codes from ErrorCode enum
+               - Meaningful commit messages (Conventional Commits)
+
+            ## Instructions
+
+            - Use `gh pr diff` to see changes
+            - Use inline comments for specific code issues
+            - Use `gh pr comment` for overall summary
+            - Be constructive and specific with suggestions
+            - Approve if changes look good, request changes if critical issues found
+
+          claude_args: |
+            --allowedTools "Read,Bash(cat:*),Bash(ls:*),Bash(head:*),Bash(tail:*),Bash(grep:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr review:*),mcp__github_inline_comment__create_inline_comment"
