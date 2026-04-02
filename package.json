@@ -52,7 +52,7 @@
     "fast-redact": "^3.5.0",
     "helmet": "^8.1.0",
     "nestjs-pino": "^4.6.0",
-    "nestjs-zod": "^5.1.1",
+    "nestjs-zod": "^5.2.1",
     "pg": "^8.20.0",
     "pg-error-constants": "^1.0.0",
     "pino-http": "^11.0.0",
