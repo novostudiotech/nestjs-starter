@@ -174,11 +174,11 @@ export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Create user' })
-  @ApiResponse({ status: 201, type: UserResponseDto })
+  @ApiOperation({ summary: 'Create product' })
+  @ApiResponse({ status: 201, type: ProductResponseDto })
   @ApiResponse({ status: 400, type: ErrorResponseDto })
-  async create(@Body() dto: CreateUserDto): Promise<UserResponseDto> {
-    return this.usersService.create(dto);
+  async create(@Body() dto: CreateProductDto): Promise<ProductResponseDto> {
+    return this.productsService.create(dto);
   }
 }
 ```
@@ -248,7 +248,7 @@ const SECRET_KEY = 'my-secret-123';
 - Error handling: `src/app/filters/global-exception.filter.ts`
 - E2E testing: `e2e/auth.spec.ts`
 - Zod validation: `src/products/dto/create-product.dto.ts`
-- Configuration: `src/config/index.ts`
+- Configuration: `src/app/config/index.ts`
 
 ### Design Principles
 - **Minimize coupling** between top-level modules. Write 'shy' code and apply the Law of Demeter
