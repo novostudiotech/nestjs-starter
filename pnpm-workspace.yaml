@@ -12,6 +12,9 @@ onlyBuiltDependencies:
   - sharp
   - unrs-resolver
 
+overrides:
+  minimatch@>=10 <10.2.5: '10.2.5'
+
 patchedDependencies:
   better-auth@1.4.18: patches/better-auth+1.4.18.patch
   better-call: patches/better-call+1.1.7.patch
