@@ -4,7 +4,7 @@
   "description": "Production-ready NestJS boilerplate",
   "author": "krylov@vasily.dev",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
   "scripts": {
     "init-project": "./scripts/init.ts",
     "sync": "./scripts/sync.sh",
